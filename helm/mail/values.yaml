@@ -90,6 +90,18 @@ certs:
 #   hello: world
 secret: {}
 
+# Define a secret which should be deployed together with the
+# chart amd mounted into a specific directory in the pod.
+mountSecret:
+  enabled: false
+  path: /var/lib/secret
+  data: {}
+    # e.g.
+    # dkim-private: |
+    #   -----BEGIN RSA PRIVATE KEY-----
+    #   < redacted >
+    #   -----END RSA PRIVATE KEY-----
+
 config:
   general: {}
     # e.g.
