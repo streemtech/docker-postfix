@@ -95,7 +95,7 @@ spec:
             - mountPath: /var/spool/postfix/private
               name: private
             - mountPath: /var/spool/postfix/public
-              name: private
+              name: public
             {{- if .Values.certs.create }}
             - name: certs
               mountPath: /var/run/certs
