@@ -1,0 +1,3 @@
+[mail.example.org]:10025		encrypt
+[smtp.gmail.com]:587		secure
+[127.0.0.1]:20025		none
