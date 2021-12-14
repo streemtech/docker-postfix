@@ -23,7 +23,7 @@ RUN        true && \
              apt-get install -y libsasl2-modules && \
              apt-get install -y postfix && \
              apt-get install -y opendkim && \
-             apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp1 postfix-lmdb netcat; \
+             apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp-dev postfix-lmdb netcat; \
            fi && \
            cp -r /etc/postfix /etc/postfix.template
 

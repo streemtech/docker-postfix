@@ -107,14 +107,11 @@ jobs:
           context: .
           push: true
           tags: boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
-          # linux/arm/v7 build fails with
-          # CMake Error at /usr/share/cmake-3.16/Modules/CMakeCompilerIdDetection.cmake:26 (list):
-          # list sub-command REMOVE_ITEM requires two or more arguments.
-          platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
+          platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
           build-args: |
-            BASE_IMAGE=ubuntu:focal
+            BASE_IMAGE=ubuntu:impish
 
       - name: Move cache
         run: |
