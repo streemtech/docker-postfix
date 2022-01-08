@@ -337,7 +337,9 @@ variable) will remove that variable from postfix config.
 Anonymize email in Postfix logs. It mask the email content by putting `*` in the middle of the name and the domain.
 For example: `from=<a*****************s@a***********.com>`
 
-Syntax: `<masker-name>[;options]`
+Syntax: `<masker-name>[?option=value&option=value&....]`
+
+**NOTICE:** Options are URL-encoded.
 
 The following filters are provided with this implementation:
 
@@ -362,6 +364,8 @@ E.g.:
 * `s@[192.168.8.10]` -> `s*s@[*.*.*.*]`
 * `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `"m*t"@[IPv6:***********]`
 
+Configure the symbol by providing the optional parameter, e.g.: `ANONYMIZE_EMAILS=smart?mask_symbol=#`
+
 ##### The `paranoid` filter
 
 The paranoid filter works similar to smart filter but will:
@@ -380,6 +384,28 @@ E.g.:
 ##### The `noop` filter
 
 This filter doesn't do anything. It's used for testing purposes only.
+
+##### The `hash` filter
+
+This filter will replace the email with the salted (HMAC) hash.
+
+E.g.:
+
+* `prettyandsimple@example.com` -> `<3052a860ddfde8b50e39843d8f1c9f591bec442823d97948b811d38779e2c757>` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world`)
+* `prettyandsimple@example.com` -> `c58731d3@8bd7a35c` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world&split=true&short_sha=t&prefix=&suffix=`)
+
+Filter will not work without configuration. You will need to provide (at least) the salt, e.g.:
+
+`ANONYMIZE_EMAILS=hash?salt=demo[&prefix=][&suffix=][&split=<T|F>][&short_sha=<T|F>][&case_sensitive=<T|F>]`
+
+| Property         | Default value | Required | Description |
+|------------------|---------------|----------|-------------|
+| `salt`           | none          | **yes**  | HMAC key (salt) used for calculating the checksum |
+| `prefix`         | `<`           | no       | Prefix of emails in the log (for easier grepping) |
+| `suffix`         | `>`           | no       | Suffix of emails in the log (for easier grepping) |
+| `split`          | `false`       | no       | Set to `1`, `t` or `true` to hash separately the local and the domain part |
+| `short_sha`      | `false`       | no       | Set to `1`, `t` or `true` to return just the first 8 characters of the hash |
+| `case_sensitive` | `true`        | no       | Set to `0`, `f` or `false` to convert email to lowercase before hashing |
 
 ##### Writting your own filters
 

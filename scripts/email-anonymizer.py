@@ -17,25 +17,28 @@ import typing
 import json
 import sys
 import importlib
+from urllib.parse import parse_qs
+import hashlib
+import hmac
 
 logger = logging.getLogger(__name__)
 
 # BIG FAT NOTICE on emails and regular expressions:
 # If you're planning on using a regular expression to validate an email: don't. Emails
-# are much more complext than you would imagine and most regular expressions will not
+# are much more complex than you would imagine and most regular expressions will not
 # cover all usecases. Newer RFCs even allow for international (read: UTF-8) email addresses.
 # Most of your favourite programming languages will have a dedicated library for validating
 # addresses.
 #
-# This pattern below, should, however match (hopefully) anything that looks like an email
+# This pattern below, should, however match anything that remotely looks like an email.
 # It is too broad, though, as it will match things which are not considered valid email
 # addresses as well. But for our use case, that's OK and more than sufficient.
 EMAIL_CATCH_ALL_PATTERN = '([^ "\\[\\]<>]+|".+")@(\[([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|[A-Za-z0-9]+:.+)\]|([^ \\{}():;]+(\.[^ \\{}():;]+)*))'
 EMAIL_CATCH_ALL = re.compile(EMAIL_CATCH_ALL_PATTERN)
 EMPTY_RESPONSE = json.dumps({})
 
-# Postfix formats message IDs like this. Let's not mask them
-# 20211207101128.0805BA272@31bfa77a2cab
+# Postfix formats message IDs like this: 20211207101128.0805BA272@31bfa77a2cab
+# Let's not mask them.
 MESSAGE_ID_PATTERN = '[0-9]+\.[0-9A-F]+@[0-9a-f]+'
 MESSAGE_ID = re.compile(MESSAGE_ID_PATTERN)
 
@@ -47,24 +50,49 @@ FILTER_MAPPINGS = {
     'default': DEFAULT_FILTER_CLASS,
     'smart': 'SmartFilter',
     'paranoid': 'ParanoidFilter',
-    'noop': 'NoopFilter',
+    'noop': 'Filter',
+    'hash': 'HashFilter',
 }
 
-# ---------------------------------------- #
+"""
+Helper function to check if the provided value is truthy or falsy.
+Will throw an error on unknown values.
+"""
+def is_truthy(val: any, name: str) -> bool:
+    if val is None:
+        raise ValueError(f"Cannot evaluate empty (None) value for {name}")
+    if val == True:
+        return True
+    elif val == False:
+        return False
 
+    val = str(val).lower()
+    if val == 'y' or val == 'yes' or val == 't' or val == 'true' or val == '1':
+        return True
+    elif val == 'n' or val == 'no' or val == 'f' or val == 'false' or val == '0':
+        return False
+
+    raise ValueError(f"Cannot evaluate value '{val}' for {name}")
+
+# -------------------------------------------------------------------------------- #
+
+"""
+Abstract base for all filters. Does nothing.
+"""
 class Filter():
-    def init(self, args: list[str]) -> None:
+    def init(self, args: 'dict[str, list[str]]') -> None:
         pass
 
-    def processMessage(self, msg: str) -> str:
-        pass
+    def replace(self, match: re.match) -> str:
+        return match.group()
 
-"""
-This filter does nothing.
-"""
-class NoopFilter(Filter):
-    def processMessage(self, msg: str) -> str:
-        return EMPTY_RESPONSE
+    def processMessage(self, msg: str) -> typing.Optional[str]:
+        result = EMAIL_CATCH_ALL.sub(
+            lambda x: self.replace(x), msg
+        )
+        return json.dumps({'msg': result}, ensure_ascii=False) if result != msg else EMPTY_RESPONSE
+
+# -------------------------------------------------------------------------------- #
 
 """
 This filter will take an educated guess at how to best mask the emails, specifically:
@@ -80,12 +108,21 @@ E.g.:
 * `demo@example.org` -> `d*o@*******.org`
 * `john.doe@example.solutions` -> `j*e@*******.solutions`
 * `sa@localhost` -> `s*a@*********`
-* `s@[192.168.8.10]` -> `s*s@[*]`
+* `s@[192.168.8.10]` -> `s*s@[*.*.*.*]`
 * `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `m*t@[IPv6:*]`
+
+This filter should still allow you to grep for lines relating to a specific email, if you know the original email, but you won't
+be able to extract the original email back from the log.
 
 """
 class SmartFilter(Filter):
     mask_symbol: str = '*'
+
+    def init(self, args: 'dict[str, list[str]]') -> None:
+        if 'mask_symbol' in args and len(args['mask_symbol']) > 0:
+            self.mask_symbol = args['mask_symbol'][0]
+
+        super().init(args)
 
     def mask_local(self, local: str) -> str:
         if local[0] == '"' and local[-1] == '"':
@@ -123,12 +160,21 @@ class SmartFilter(Filter):
 
         return local + '@' + domain
 
-    def processMessage(self, msg: str) -> typing.Optional[str]:
-        result = EMAIL_CATCH_ALL.sub(
-            lambda x: self.replace(x), msg
-        )
-        return json.dumps({'msg': result}, ensure_ascii=False) if result != msg else EMPTY_RESPONSE
+# -------------------------------------------------------------------------------- #
 
+"""
+Paranoid filter is an extension of the smart filter. It will replace everything in the
+local part with the `mask_symbol` and will leavel only top level domain (TLD) in the
+domain part. Domain will be replaced by ONE occurence of the `mask_symbol`.
+
+E.g.:
+
+* `demo@example.org` -> `*@*.org`
+* `john.doe@example.solutions` -> `*@*.solutions`
+* `sa@localhost` -> `*@*`
+* `s@[192.168.8.10]` -> `*@[*]`
+* `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `*@[IPv6:*]`
+"""
 class ParanoidFilter(SmartFilter):
 
     def mask_local(self, local: str) -> str:
@@ -148,7 +194,82 @@ class ParanoidFilter(SmartFilter):
         else: # Local domain
             return self.mask_symbol
 
-# ---------------------------------------- #
+# -------------------------------------------------------------------------------- #
+
+"""
+HashFilter will replace the email with it's hash. This should allow you to grep through
+the logs by hashing the email address yourself, while retaining the anononymity.
+
+HashFilter uses HMAC to hash addresses, so make sure you inject your unique salt. This
+way, the calculated hashes will be different accross organizations, though providing
+complete anonimity.
+
+Notice that for IP addreses hashes are not appropriate, the set of IP addresses is 
+limited and rainbow tables could be used to get back IP addresses. This is not possible
+with emails.
+
+IANAL, though, so your mileage my vary.
+
+"""
+class HashFilter(Filter):
+    prefix: str = '<'            # Prefix emails with this (set of) character(s) for easier grepping
+    suffix: str = '>'            # Suffix emails with this (set of) character(s) for easier grepping
+    case_sensitive: bool = True  # Convert strings to lowercase if false
+    short_sha: bool = False      # Cut the string to first 8 characters
+    split: bool = False          # Split and anonymize local and domain part independently
+    
+    def init(self, args: 'dict[str, list[str]]') -> None:
+        if 'salt' in args and len(args['salt']) > 0:
+            self.byte_key = bytes(args['salt'][0], 'UTF-8')
+        else:
+            raise ValueError("You need to specify salt with this filter!")
+
+        if 'prefix' in args and len(args['prefix']) > 0:
+            self.prefix = args['prefix'][0]
+        if 'suffix' in args and len(args['suffix']) > 0:
+            self.suffix = args['suffix'][0]
+        if 'case_sensitive' in args and len(args['case_sensitive']) > 0:
+            self.case_sensitive = is_truthy(args['case_sensitive'][0], 'case_sensitive')
+        if 'short_sha' in args and len(args['short_sha']) > 0:
+            self.short_sha = is_truthy(args['short_sha'][0], 'short_sha')
+        if 'split' in args and len(args['split']) > 0:
+            self.split = is_truthy(args['split'][0], 'split')
+
+        super().init(args)
+
+    def replace(self, match: re.match) -> str:
+        email = match.group()
+
+        # Return the details unchanged if they look like Postfix message ID
+        if bool(MESSAGE_ID.match(email)):
+            return email
+
+        if not self.case_sensitive:
+            email = email.lower()
+
+        if self.split:
+            # The "@" can show up in the local part, but shouldn't appear in the
+            # domain part (at least not that we know).
+            local, domain = email.rsplit("@", 1)
+
+            local = hmac.new(self.byte_key, local.encode(), hashlib.sha256).hexdigest()
+            domain = hmac.new(self.byte_key, domain.encode(), hashlib.sha256).hexdigest()
+
+            if self.short_sha:
+                local = local[:8]
+                domain = domain[:8]
+
+            email = local + "@" + domain
+
+        else:
+            email = hmac.new(self.byte_key, email.encode(), hashlib.sha256).hexdigest()
+            if self.short_sha:
+                email = email[:8]
+
+        return self.prefix + email + self.suffix
+
+
+# -------------------------------------------------------------------------------- #
 
 def get_filter() -> Filter:
     """
@@ -158,12 +279,15 @@ def get_filter() -> Filter:
 
     :return: Returns a specific implementation of the `Filter`
     """
-    opts: list[str] = []
+    opts: dict[str, list[str]] = {}
     clazz: typing.Optional[str] = None
 
     if len(sys.argv) > 1:
         clazz = sys.argv[1].strip()
-        opts = sys.argv[2:]
+        # opts = sys.argv[2:]
+        if '?' in clazz:
+            clazz, query_string = clazz.split("?", 1)
+            opts = parse_qs(query_string, keep_blank_values=True,strict_parsing=True)
 
         if clazz.lower() in FILTER_MAPPINGS:
             clazz = FILTER_MAPPINGS[clazz.lower()]
