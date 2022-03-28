@@ -2,6 +2,13 @@
 set -e
 cd integration-tests
 
+FIND="$(which find)"
+
+# Support running on macOS with GNU installed under "g*" prefix
+if command -v gfind > /dev/null 2>&1; then
+    FIND="$(which gfind)"
+fi
+
 run_test() {
     local exit_code
     echo
@@ -28,7 +35,7 @@ if [[ $# -gt 0 ]]; then
         shift
     done
 else
-    for i in `find -maxdepth 1 -type d | grep -Ev "^./(tester|xoauth2)" | sort`; do
+    for i in `${FIND} -maxdepth 1 -type d | grep -Ev "^./(tester|xoauth2)" | sort`; do
         i="$(basename "$i")"
         if [ "$i" == "." ] || [ "$i" == ".." ]; then
             continue
