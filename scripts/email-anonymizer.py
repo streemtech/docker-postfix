@@ -136,7 +136,7 @@ class SmartFilter(Filter):
                 left, right = domain.split(":", 1)
                 return left + ':' + (len(right)-1) * self.mask_symbol + ']'
             else:
-                return '[*.*.*.*]'
+                return '[' + self.mask_symbol + '.' + self.mask_symbol + '.' + self.mask_symbol + '.' + self.mask_symbol + ']'
         elif '.' in domain: # Normal domain
             s, tld = domain.rsplit('.', 1)
             return len(s) * self.mask_symbol  + '.' + tld

@@ -364,7 +364,11 @@ E.g.:
 * `s@[192.168.8.10]` -> `s*s@[*.*.*.*]`
 * `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `"m*t"@[IPv6:***********]`
 
-Configure the symbol by providing the optional parameter, e.g.: `ANONYMIZE_EMAILS=smart?mask_symbol=#`
+Configuration parameters:
+
+| Property         | Default value | Required | Description |
+|------------------|---------------|----------|-------------|
+| `mask_symbol`    | `*`           | no       | Mask symbol to use instead of replaced characters |
 
 ##### The `paranoid` filter
 
@@ -381,9 +385,11 @@ E.g.:
 * `s@[192.168.8.10]` -> `*@[*]`
 * `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `*@[IPv6:*]`
 
-##### The `noop` filter
+Configuration parameters:
 
-This filter doesn't do anything. It's used for testing purposes only.
+| Property         | Default value | Required | Description |
+|------------------|---------------|----------|-------------|
+| `mask_symbol`    | `*`           | no       | Mask symbol to use instead of replaced characters |
 
 ##### The `hash` filter
 
@@ -394,9 +400,9 @@ E.g.:
 * `prettyandsimple@example.com` -> `<3052a860ddfde8b50e39843d8f1c9f591bec442823d97948b811d38779e2c757>` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world`)
 * `prettyandsimple@example.com` -> `c58731d3@8bd7a35c` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world&split=true&short_sha=t&prefix=&suffix=`)
 
-Filter will not work without configuration. You will need to provide (at least) the salt, e.g.:
+Filter will not work without configuration. You will need to provide (at least) the salt, e.g.: `ANONYMIZE_EMAILS=hash?salt=demo`
 
-`ANONYMIZE_EMAILS=hash?salt=demo[&prefix=][&suffix=][&split=<T|F>][&short_sha=<T|F>][&case_sensitive=<T|F>]`
+Configuration parameters:
 
 | Property         | Default value | Required | Description |
 |------------------|---------------|----------|-------------|
@@ -407,9 +413,13 @@ Filter will not work without configuration. You will need to provide (at least) 
 | `short_sha`      | `false`       | no       | Set to `1`, `t` or `true` to return just the first 8 characters of the hash |
 | `case_sensitive` | `true`        | no       | Set to `0`, `f` or `false` to convert email to lowercase before hashing |
 
+##### The `noop` filter
+
+This filter doesn't do anything. It's used for testing purposes only.
+
 ##### Writting your own filters
 
-It's easy enough to write your own filters. The simplest way would be to take the `email-anonymizer.py` filte in this
+It's easy enough to write your own filters. The simplest way would be to take the `email-anonymizer.py` file in this
 image, write your own and then attach it to the container image under `/scripts`. If you're feeling adentorous, you can
 also install your own Python package -- the script will automatically pick up the class name.
 
