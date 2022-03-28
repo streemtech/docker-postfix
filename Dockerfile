@@ -30,7 +30,7 @@ RUN        true && \
 # ============================ BUILD SASL XOAUTH2 ============================
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
-ARG SASL_XOAUTH2_GIT_REF=release-0.10
+ARG SASL_XOAUTH2_GIT_REF=release-0.11
 
 RUN        true && \
            if [ -f /etc/alpine-release ]; then \
