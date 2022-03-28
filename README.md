@@ -27,6 +27,7 @@ Simple postfix relay host ("postfix null client") for your Docker containers. Ba
     * [POSTFIX_message_size_limit](#postfix_message_size_limit)
     * [Overriding specific postfix settings](#overriding-specific-postfix-settings)
     * [ANONYMIZE_EMAILS](#anonymize_emails)
+    * [SKIP_ROOT_SPOOL_CHOWN](#skip_root_spool_chown)
   * [DKIM / DomainKeys](#dkim--domainkeys)
     * [Supplying your own DKIM keys](#supplying-your-own-dkim-keys)
     * [Auto-generating the DKIM selectors through the image](#auto-generating-the-dkim-selectors-through-the-image)
@@ -331,6 +332,13 @@ it stuck in the outbound queue indefinitely.
 Any Postfix [configuration option](http://www.postfix.org/postconf.5.html) can be overriden using `POSTFIX_<name>`
 environment variables, e.g. `POSTFIX_allow_mail_to_commands=alias,forward,include`. Specifying no content (empty
 variable) will remove that variable from postfix config.
+
+#### SKIP_ROOT_SPOOL_CHOWN
+
+Setting this to `1` will skip reowing in `/var/spool/postfix/` and `/var/spool/postfix/pid`. You generally do not
+want to set this option unless you're running into specific issues (e.g. [#97](https://github.com/bokysan/docker-postfix/issues/97)).
+
+If unsure, leave it as is.
 
 #### ANONYMIZE_EMAILS
 

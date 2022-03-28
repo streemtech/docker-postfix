@@ -71,9 +71,28 @@ setup_conf() {
 }
 
 reown_folders() {
-	mkdir -p /var/spool/postfix/pid /var/spool/postfix/dev
-	chown root: /var/spool/postfix/
-	chown root: /var/spool/postfix/pid
+	mkdir -p /var/spool/postfix/pid /var/spool/postfix/dev /var/spool/postfix/private /var/spool/postfix/public 
+	if [[ "${SKIP_ROOT_SPOOL_CHOWN}" == "1" ]; then
+		warn "${emphasis}SKIP_ROOT_SPOOL_CHOWN${reset} is set. Script will not chown ${emphasis}/var/spool/postfix/${reset}. Make sure you know what you're doing."
+	else
+		debug "Reowing ${emphasis}/var/spool/postfix/${reset}"
+		if ! chown root: /var/spool/postfix/; then
+			warn "Cannot reown ${emphasis}root:${reset} for ${emphasis}/var/spool/postfix/${reset}. Your installation might be broken."
+		fi
+
+		if ! chown root: /var/spool/postfix/pid; then
+			warn "Cannot reown ${emphasis}root:${reset} for ${emphasis}/var/spool/postfix/pid/${reset}. Your installation might be broken."
+		fi
+	fi
+
+	debug "Reowing ${emphasis}/var/spool/postfix/private/${reset}"
+	if ! chown -R postfix:postdrop /var/spool/postfix/private; then
+		warn "Cannot reown ${emphasis}postfix:postdrop${reset} for ${emphasis}/var/spool/postfix/private${reset}. Your installation might be broken."
+	fi
+	debug "Reowing ${emphasis}/var/spool/postfix/public/${reset}"
+	if ! chown -R postfix:postdrop /var/spool/postfix/public; then
+		warn "Cannot reown ${emphasis}postfix:postdrop${reset} for ${emphasis}/var/spool/postfix/public${reset}. Your installation might be broken."
+	fi
 
 	do_postconf -e "manpage_directory=/usr/share/man"
 
