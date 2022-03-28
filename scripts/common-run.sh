@@ -199,7 +199,7 @@ postfix_setup_relayhost() {
 		if [ -n "$RELAYHOST_USERNAME" ] && [ -n "$RELAYHOST_PASSWORD" ]; then
 			echo -e " using username ${emphasis}$RELAYHOST_USERNAME${reset} and password ${emphasis}(redacted)${reset}."
 			if [[ -f /etc/postfix/sasl_passwd ]]; then
-				if ! grep -F "$SASL_RELAYHOST $RELAYHOST_USERNAME:$RELAYHOST_PASSWORD" /etc/postfix/sasl_passwd; then
+				if ! grep -q -F "$SASL_RELAYHOST $RELAYHOST_USERNAME:$RELAYHOST_PASSWORD" /etc/postfix/sasl_passwd; then
 					sed -i -e "/^$SASL_RELAYHOST .*$/d" /etc/postfix/sasl_passwd
 					echo "$SASL_RELAYHOST $RELAYHOST_USERNAME:$RELAYHOST_PASSWORD" >> /etc/postfix/sasl_passwd
 				fi
