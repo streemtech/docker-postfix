@@ -355,8 +355,7 @@ The following filters are provided with this implementation:
 
 Enable the filter by setting `ANONYMIZE_EMAILS=smart`.
 
-The filter has no options and is enabled by setting the value to `on`, `true`, `1`, `default` or `smart`. The filter
-masker will take an educated guess at how to best mask the emails, specifically:
+The is enabled by setting the value to `on`, `true`, `1`, `default` or `smart`. The filter will take an educated guess at how to best mask the emails, specifically:
 
 * It will leave the first and the last letter of the local part (if the local part is one letter long it gets repeated atht beggining and the end)
 * If the local part is in quotes, it will remove the quotes (Warning: if the email starts with a space, this might look weird in logs)
@@ -383,7 +382,7 @@ Configuration parameters:
 The paranoid filter works similar to smart filter but will:
 
 * Replace the local part with **ONE** asterisk
-* Replace the domain part (sans TLD) with **ONE asterisk
+* Replace the domain part (sans TLD) with **ONE** asterisk
 
 E.g.:
 
@@ -401,7 +400,9 @@ Configuration parameters:
 
 ##### The `hash` filter
 
-This filter will replace the email with the salted (HMAC) hash.
+This filter will replace the email with the salted (HMAC) hash. While it makes the logs much less readable, it has one specific benefit:
+it allows you to search through the logs if you know the email address you're looking for. You are able to calculate the hash yourself
+and then grep through the logs for this specific email address.
 
 E.g.:
 
