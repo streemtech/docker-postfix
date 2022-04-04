@@ -113,7 +113,7 @@ unsuitable to link to packages with GPL-incompatible licenses. As a result Alpin
 
 While this should not affect most of the users (`/etc/postfix/main.cf` is managed by this image), there might be use cases where
 people have their own configuration which relies on `hash` and `btree` databases. To avoid braking live systems, the version of this
-image has been updated to `v3.0.0.`.
+image has been updated to `v3.0.0`.
 
 ## Architectures
 
@@ -333,14 +333,14 @@ Any Postfix [configuration option](http://www.postfix.org/postconf.5.html) can b
 environment variables, e.g. `POSTFIX_allow_mail_to_commands=alias,forward,include`. Specifying no content (empty
 variable) will remove that variable from postfix config.
 
-#### SKIP_ROOT_SPOOL_CHOWN
+#### `SKIP_ROOT_SPOOL_CHOWN`
 
 Setting this to `1` will skip reowing in `/var/spool/postfix/` and `/var/spool/postfix/pid`. You generally do not
 want to set this option unless you're running into specific issues (e.g. [#97](https://github.com/bokysan/docker-postfix/issues/97)).
 
 If unsure, leave it as is.
 
-#### ANONYMIZE_EMAILS
+#### `ANONYMIZE_EMAILS`
 
 Anonymize email in Postfix logs. It mask the email content by putting `*` in the middle of the name and the domain.
 For example: `from=<a*****************s@a***********.com>`
@@ -358,7 +358,7 @@ Enable the filter by setting `ANONYMIZE_EMAILS=smart`.
 The filter has no options and is enabled by setting the value to `on`, `true`, `1`, `default` or `smart`. The filter
 masker will take an educated guess at how to best mask the emails, specifically:
 
-* It will leave the first and the last letter of the local part (if it's oly one letter, it will get repated)
+* It will leave the first and the last letter of the local part (if the local part is one letter long it gets repeated atht beggining and the end)
 * If the local part is in quotes, it will remove the quotes (Warning: if the email starts with a space, this might look weird in logs)
 * It will replace all the letters inbetween with **ONE** asterisk, even if there are none
 * It will replace everything but a TLD with a star
