@@ -37,11 +37,6 @@ EMAIL_CATCH_ALL_PATTERN = '([^ "\\[\\]<]+|".+")@(\[([0-9]+\.[0-9]+\.[0-9]+\.[0-9
 EMAIL_CATCH_ALL = re.compile(EMAIL_CATCH_ALL_PATTERN)
 EMPTY_RESPONSE = json.dumps({})
 
-# Postfix formats message IDs like this: 20211207101128.0805BA272@31bfa77a2cab
-# Let's not mask them.
-MESSAGE_ID_PATTERN = '[0-9]+\.[0-9A-F]+@[0-9a-f]+'
-MESSAGE_ID = re.compile(MESSAGE_ID_PATTERN)
-
 """A default filter, if none other is provided."""
 DEFAULT_FILTER_CLASS: str = 'SmartFilter'
 
@@ -80,15 +75,46 @@ def is_truthy(val: any, name: str) -> bool:
 Abstract base for all filters. Does nothing.
 """
 class Filter():
+    MESSAGE_ID_LINE = "message-id="
+    MESSAGE_ID_LINE_LEN = len(MESSAGE_ID_LINE)
+
     def init(self, args: 'dict[str, list[str]]') -> None:
         pass
 
-    def replace(self, match: re.match) -> str:
+    def is_message_id(self, match: re.match, msg: str) -> bool:
+        start = match.start()
+        email = match.group()
+
+        # Note that our regex will match thigs like "message-id=Issue1649523226559@postfix-mail.mail-system.svc.cluster.local"
+        # so we need to filter / check for these first
+
+        if email.startswith(self.MESSAGE_ID_LINE):
+            return True
+        
+        if start >= self.MESSAGE_ID_LINE_LEN:
+            pos = start-1
+            while True:
+                char = msg[pos]
+                if char == '=':
+                    break
+                elif char in '{<["\'':
+                    pos = pos - 1
+                    continue
+
+                return False
+
+            check = msg[pos-self.MESSAGE_ID_LINE_LEN+1:pos+1]
+            if check == self.MESSAGE_ID_LINE:
+                return True
+
+        return False
+
+    def replace(self, match: re.match, msg: str) -> str:
         return match.group()
 
     def processMessage(self, msg: str) -> typing.Optional[str]:
         result = EMAIL_CATCH_ALL.sub(
-            lambda x: self.replace(x), msg
+            lambda x: self.replace(x, msg), msg
         )
         return json.dumps({'msg': result}, ensure_ascii=False) if result != msg else EMPTY_RESPONSE
 
@@ -144,11 +170,11 @@ class SmartFilter(Filter):
         else: # Local domain
             return len(domain) * self.mask_symbol
 
-    def replace(self, match: re.match) -> str:
+    def replace(self, match: re.match, msg: str) -> str:
         email = match.group()
 
         # Return the details unchanged if they look like Postfix message ID
-        if bool(MESSAGE_ID.match(email)):
+        if self.is_message_id(match, msg):
             return email
 
         # The "@" can show up in the local part, but shouldn't appear in the
@@ -237,11 +263,11 @@ class HashFilter(Filter):
 
         super().init(args)
 
-    def replace(self, match: re.match) -> str:
+    def replace(self, match: re.match, msg: str) -> str:
         email = match.group()
 
         # Return the details unchanged if they look like Postfix message ID
-        if bool(MESSAGE_ID.match(email)):
+        if self.is_message_id(match, msg):
             return email
 
         if not self.case_sensitive:

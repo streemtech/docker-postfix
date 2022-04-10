@@ -1,0 +1,53 @@
+version: '3.7'
+services:
+  postfix_test_587:
+    hostname: "postfix"
+    image: "boky/postfix"
+    build:
+      context: ../..
+    restart: always
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "netstat -an | fgrep 587 | fgrep -q LISTEN" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 2
+    environment:
+      FORCE_COLOR: "1"
+      ANONYMIZE_EMAILS: smart
+      ALLOWED_SENDER_DOMAINS: "mydomain.example.com"
+      MASQUERADED_DOMAINS: "mydomain.example.com"
+      RELAYHOST: "smtp.gmail.com:587"
+      RELAYHOST_USERNAME: "test@gmail.com"
+      RELAYHOST_PASSWORD: "test12345"
+
+      POSTFIX_myhostname: "mailinator"
+      POSTFIX_mydomain: "target.example.com"
+      POSTFIX_mydestination: "mailinator localhost.target.example.com localhost target.example.com"
+      POSTFIX_luser_relay: "root+@target.example.com"
+      POSTFIX_smtpd_end_of_data_restrictions: "check_client_access static:discard"
+      POSTFIX_smtp_sender_dependent_authentication: "yes"
+      POSTFIX_smtp_sasl_auth_enable: "yes"
+      POSTFIX_smtp_sasl_security_options: "noanonymous"
+      POSTFIX_smtp_sasl_mechanism_filter: "login, plain, digest-md5"
+      POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated, reject_unauth_destination"
+      POSTFIX_smtpd_sasl_auth_enable: "yes"
+      POSTFIX_smtpd_sasl_authenticated_header: "yes"
+      POSTFIX_smtpd_sasl_security_options: "noanonymous"
+      POSTFIX_smtpd_sasl_local_domain: "$myhostname"
+      POSTFIX_broken_sasl_auth_clients: "yes"
+      POSTFIX_smtpd_client_restrictions: ""
+      POSTFIX_message_size_limit: "40960000"
+      LOG_FORMAT: "json"
+  tests:
+    image: "boky/postfix-integration-test"
+    restart: "no"
+    volumes:
+      - "../tester:/code"
+    build:
+      context: ../tester
+    command: "/" # relative path to /code
+    environment:
+      FROM: "demo@mydomain.example.com"
+      TO: "root@target.example.com"
+      SKIP_INVALID_DOMAIN_SEND: "1"

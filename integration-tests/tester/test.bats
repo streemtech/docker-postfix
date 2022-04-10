@@ -1,7 +1,12 @@
 #!/usr/bin/env bats
 
-FROM=$1
-TO=$2
+if [[ "$#" -gt 0 ]]; then
+	FROM=$1
+fi
+
+if [[ "$#" -gt 1 ]]; then
+	TO=$2
+fi
 
 if [ -z "$FROM" ]; then
     FROM="demo@example.org"
