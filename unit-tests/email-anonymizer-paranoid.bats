@@ -56,10 +56,6 @@ mapfile SMART <<'EOF'
 *@*.भारत
 EOF
 
-mapfile MESSAGE_IDS <<'EOF'
-20211207101128.0805BA272@31bfa77a2cab
-EOF
-
 @test "verify paranoid email anonymizer" {
 	local error
 	local email
@@ -79,19 +75,4 @@ EOF
 	if [[ -n "$error" ]]; then
 		exit 1
 	fi
-}
-
-@test "verify paranoid error for message id" {
-	local email
-	for index in "${!MESSAGE_IDS[@]}"; do
-		email="${MESSAGE_IDS[$index]}"
-		email=${email%$'\n'} # Remove trailing new line
-		result="$(echo "$email" | /code/scripts/email-anonymizer.sh paranoid)"
-		result=${result%$'\n'} # Remove trailing new line
-		expected='{}'
-		if [ "$result" != "$expected" ]; then
-			echo "Expected '$expected', got: '$result'" >&2
-			exit 1
-		fi
-	done
 }
