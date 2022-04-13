@@ -95,7 +95,9 @@ jobs:
           tags: |
             boky/postfix:latest
             boky/postfix:latest-alpine
-          platforms: "linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le" # linux/s390x: "rsyslog (no such package)"
+          # linux/386: WARNING: Ignoring https://dl-cdn.alpinelinux.org/alpine/v3.15/main: UNTRUSTED signature
+          # linux/s390x: "rsyslog (no such package)"
+          platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |

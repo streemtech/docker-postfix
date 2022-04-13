@@ -92,7 +92,7 @@ jobs:
           tags: |
             boky/postfix:latest
             boky/postfix:latest-alpine
-          platforms: "linux/amd64" # linux/s390x: "rsyslog (no such package)"
+          platforms: "linux/amd64"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine
 
           build-args: |
