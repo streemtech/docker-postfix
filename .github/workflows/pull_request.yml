@@ -69,10 +69,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          #key: ${{ runner.os }}-single-buildx-${{ hashFiles('**/Dockerfile') }}
-          key: ${{ runner.os }}-single-buildx-${{ github.sha }}
+          #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-single-buildx-
+            ${{ runner.os }}-buildx-
 
 
 
