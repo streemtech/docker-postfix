@@ -55,6 +55,8 @@ jobs:
 
       # Docker hub login
       - uses: ./.github/actions/docker-hub-login
+        with:
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -107,6 +109,8 @@ jobs:
 
       # Docker hub login
       - uses: ./.github/actions/docker-hub-login
+        with:
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
         uses: actions/cache@v3

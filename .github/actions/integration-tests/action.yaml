@@ -1,7 +1,6 @@
 name: 'Integration tests'
 description: 'Execute integration tests'
 
-
 inputs:
   XOAUTH2_RELAYHOST_USERNAME:
     description: 'Username'
