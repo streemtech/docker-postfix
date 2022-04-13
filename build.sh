@@ -10,12 +10,13 @@ declare cache_dir
 declare arg_list
 
 if [[ "$CI" == "true" ]]; then
-    cache_form="/tmp/.buildx-cache/alpine"
-    cache_to="/tmp/.buildx-cache-new/alpine"
-else 
-    cache_from="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cache"
-    cache_to="${cache_from}"
+    if [[ -f "/tmp/.buildx-cache/alpine/index.json" ]]; then
+        arg_list="$arg_list --cache-from type=local,src=/tmp/.buildx-cache/alpine/index.json"
+    fi
 fi
+
+cache_from="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cache"
+cache_to="${cache_from}"
 
 if ! docker buildx inspect multiarch > /dev/null; then
     docker buildx create --name multiarch
