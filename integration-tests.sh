@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -e
+
+./build.sh --load --tag boky/postfix
 cd integration-tests
 
 FIND="$(which find)"

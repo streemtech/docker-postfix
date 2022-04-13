@@ -6,8 +6,8 @@ ARG BASE_IMAGE=alpine:latest
 FROM ${BASE_IMAGE} AS build-scripts
 COPY ./build-scripts ./build-scripts
 
-FROM ${BASE_IMAGE} AS base
 # ============================ INSTALL BASIC SERVICES ============================
+FROM ${BASE_IMAGE} AS base
 
 # Install supervisor, postfix
 # Install postfix first to get the first account (101)
@@ -20,8 +20,8 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
            sh /build-scripts/postfix-install.sh
 
-FROM base AS sasl
 # ============================ BUILD SASL XOAUTH2 ============================
+FROM base AS sasl
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
 ARG SASL_XOAUTH2_GIT_REF=release-0.12
@@ -36,6 +36,7 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
            sh /build-scripts/sasl-build.sh
 
+# ============================ Prepare main image ============================
 FROM sasl
 LABEL maintainer="Bojan Cekrlic - https://github.com/bokysan/docker-postfix/"
 

@@ -7,8 +7,6 @@ services:
   postfix_test_587:
     hostname: "postfix"
     image: "boky/postfix"
-    build:
-      context: ../..
     restart: always
     healthcheck:
       test: [ "CMD", "sh", "-c", "netstat -an | fgrep 587 | fgrep -q LISTEN" ]
