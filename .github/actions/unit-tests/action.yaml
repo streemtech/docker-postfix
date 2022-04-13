@@ -1,0 +1,8 @@
+name: 'Unit tests'
+description: 'Execute unit tests'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run unit tests
+      run: ./unit-tests.sh
