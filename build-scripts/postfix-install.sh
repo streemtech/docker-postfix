@@ -3,6 +3,7 @@ set -e
 
 
 do_alpine() {
+    apk update
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm
     apk add postfix
     apk add opendkim
