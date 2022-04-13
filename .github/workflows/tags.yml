@@ -8,14 +8,33 @@ jobs:
   Unit_Tests:
     runs-on: ubuntu-latest
     steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/unit-tests
+
   Integration_Tests:
     runs-on: ubuntu-latest
     steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/integration-tests
   Helm_chart_Tests:
     runs-on: ubuntu-latest
     steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/helm-chart-tests
 
   Build_Alpine:
