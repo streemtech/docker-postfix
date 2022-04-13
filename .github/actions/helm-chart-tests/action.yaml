@@ -5,4 +5,5 @@ runs:
   using: "composite"
   steps:
     - name: Run HELM chart tests
+      shell: bash
       run: ./helm/tests.sh
