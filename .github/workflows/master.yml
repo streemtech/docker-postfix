@@ -5,68 +5,35 @@ on:
     branches: [ 'master' ]
 
 jobs:
-  buildx:
+  "Unit Tests":
     runs-on: ubuntu-latest
     steps:
+      - uses: ./.github/actions/unit-tests
+  "Integration Tests":
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/integration-tests
+  "Helm chart Tests":
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/helm-chart-tests
 
-      - name: Checkout branch
+  "Build Alpine":
+    runs-on: ubuntu-latest
+    needs:
+      - "Unit Tests"
+      - "Integration Tests"
+      - "Helm chart Tests"
+    steps:
+      # Checkout
+      - name: Checkout
         uses: actions/checkout@v3
 
+      # Buildkit setup
+      - uses: ./.github/actions/buildx-setup
 
-
-
-
-
-
-
-
-
-      - name: Get release version
-        id: version_number
-        shell: bash
-        run: |
-          echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
-          echo "::set-output name=RELEASE_VERSION::${GITHUB_REF:10}"
-
-      - name: Run unit tests
-        run: ./unit-tests.sh
-
-      - name: Run integration tests
-        shell: bash
-        env: # Or as an environment variable
-          XOAUTH2_RELAYHOST_USERNAME: ${{ secrets.XOAUTH2_RELAYHOST_USERNAME }}
-          XOAUTH2_CLIENT_ID: ${{ secrets.XOAUTH2_CLIENT_ID }}
-          XOAUTH2_SECRET: ${{ secrets.XOAUTH2_SECRET }}
-          XOAUTH2_INITIAL_REFRESH_TOKEN: ${{ secrets.XOAUTH2_INITIAL_REFRESH_TOKEN }}
-        run: |
-          echo "RELAYHOST_USERNAME=${XOAUTH2_RELAYHOST_USERNAME}" > integration-tests/xoauth2/.env
-          echo "FROM=${XOAUTH2_RELAYHOST_USERNAME}" >> integration-tests/xoauth2/.env
-          echo "TO=${XOAUTH2_RELAYHOST_USERNAME}" >> integration-tests/xoauth2/.env
-          echo "XOAUTH2_CLIENT_ID=${XOAUTH2_CLIENT_ID}" >> integration-tests/xoauth2/.env
-          echo "XOAUTH2_SECRET=${XOAUTH2_SECRET}" >> integration-tests/xoauth2/.env
-          echo "XOAUTH2_INITIAL_REFRESH_TOKEN=${XOAUTH2_INITIAL_REFRESH_TOKEN}" >> integration-tests/xoauth2/.env
-          cp integration-tests/xoauth2/.env integration-tests/xoauth2-error/.env
-          ./integration-tests.sh
-
-      - name: Run HELM chart tests
-        run: ./helm/tests.sh
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@master
-        with:
-          install: true
-
-      - name: Builder info
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+      # Docker hub login
+      - uses: ./.github/actions/buildx-setup
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -76,12 +43,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: 'boky'
-          password: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
@@ -101,6 +62,37 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |
             BASE_IMAGE=alpine:latest
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  "Build Ubuntu":
+    runs-on: ubuntu-latest
+    needs:
+      - "Unit Tests"
+      - "Integration Tests"
+      - "Helm chart Tests"
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Buildkit setup
+      - uses: ./.github/actions/buildx-setup
+
+      # Docker hub login
+      - uses: ./.github/actions/buildx-setup
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Build and push Ubuntu
         uses: docker/build-push-action@v2
