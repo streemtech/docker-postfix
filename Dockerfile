@@ -1,62 +1,43 @@
+# syntax=docker/dockerfile:1.2
+
 ARG BASE_IMAGE=alpine:latest
 # ARG BASE_IMAGE=ubuntu:focal
 
-FROM ${BASE_IMAGE}
-LABEL maintainer="Bojan Cekrlic - https://github.com/bokysan/docker-postfix/"
+FROM ${BASE_IMAGE} AS build-scripts
+COPY ./build-scripts ./build-scripts
 
+FROM ${BASE_IMAGE} AS base
 # ============================ INSTALL BASIC SERVICES ============================
 
 # Install supervisor, postfix
 # Install postfix first to get the first account (101)
 # Install opendkim second to get the second account (102)
-RUN        true && \
-           if [ -f /etc/alpine-release ]; then \
-             apk add --no-cache --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm && \
-             apk add --no-cache postfix && \
-             apk add --no-cache opendkim && \
-             apk add --no-cache --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb && \
-             (rm "/tmp/"* 2>/dev/null || true) && (rm -rf /var/cache/apk/* 2>/dev/null || true); \
-           else \
-             export DEBIAN_FRONTEND=noninteractive && \
-             echo "Europe/Berlin" > /etc/timezone && \
-             apt-get update -y -q && \
-             apt-get install -y libsasl2-modules && \
-             apt-get install -y postfix && \
-             apt-get install -y opendkim && \
-             apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp-dev postfix-lmdb netcat; \
-           fi && \
-           cp -r /etc/postfix /etc/postfix.template
+RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
+           --mount=type=cache,target=/var/lib/apt,sharing=locked \
+           --mount=type=cache,target=/var/cache/apk,sharing=locked \
+           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
+           --mount=type=tmpfs,target=/tmp \
+           --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
+           sh /build-scripts/postfix-install.sh
 
+FROM base AS sasl
 # ============================ BUILD SASL XOAUTH2 ============================
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
-ARG SASL_XOAUTH2_GIT_REF=release-0.11
+ARG SASL_XOAUTH2_GIT_REF=release-0.12
 
-RUN        true && \
-           if [ -f /etc/alpine-release ]; then \
-             apk add --no-cache --upgrade --virtual .build-deps git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev; \
-           else \
-             export DEBIAN_FRONTEND=noninteractive && \
-             echo "Europe/Berlin" > /etc/timezone && \
-             apt-get update -y -qq && \
-             apt-get install -y --no-install-recommends git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev; \
-           fi && \
-           git clone --depth 1 --branch ${SASL_XOAUTH2_GIT_REF} ${SASL_XOAUTH2_REPO_URL} /sasl-xoauth2 && \
-           cd /sasl-xoauth2 && \
-           mkdir build && \
-           cd build && \
-           cmake -DCMAKE_INSTALL_PREFIX=/ .. && \
-           make && \
-           make install && \
-           if [ -f /etc/alpine-release ]; then \
-             apk del .build-deps; \
-           else \
-            apt-get remove --purge -y git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev; \
-            apt-get autoremove --yes; apt-get clean autoclean; \
-            rm -rf /var/lib/apt/lists/*; \
-           fi && \
-           cd / && rm -rf /sasl-xoauth2
+RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
+           --mount=type=cache,target=/var/lib/apt,sharing=locked \
+           --mount=type=cache,target=/var/cache/apk,sharing=locked \
+           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
+           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
+           --mount=type=tmpfs,target=/tmp \
+           --mount=type=tmpfs,target=/sasl-xoauth2 \
+           --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
+           sh /build-scripts/sasl-build.sh
 
+FROM sasl
+LABEL maintainer="Bojan Cekrlic - https://github.com/bokysan/docker-postfix/"
 
 # Set up configuration
 COPY       /configs/supervisord.conf     /etc/supervisord.conf

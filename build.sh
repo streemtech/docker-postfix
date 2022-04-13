@@ -6,6 +6,10 @@ export DOCKER_BUILDKIT=1
 export DOCKER_CLI_EXPERIMENTAL=enabled
 export BUILDKIT_PROGRESS=plain
 
+declare cache_dir="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cache"
+declare arg_list
+declare PLATFORMS
+
 if ! docker buildx inspect multiarch > /dev/null; then
     docker buildx create --name multiarch
 fi
@@ -18,9 +22,17 @@ if [[ "$*" == *--push* ]]; then
     fi
 fi
 
+arg_list=" --cache-to type=local,dest=${cache_dir}"
+if [[ -f "${cache_dir}/index.json" ]]; then
+    arg_list="$arg_list --cache-from type=local,src=${cache_dir}"
+else
+    mkdir -p "${cache_dir}"
+fi
+
+
 if [[ -z "$PLATFORMS" ]]; then
     PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 fi
 
-docker buildx build --platform $PLATFORMS . $*
+docker buildx build ${arg_list} --platform $PLATFORMS . $*
 
