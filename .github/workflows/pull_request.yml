@@ -40,6 +40,9 @@ jobs:
       - Helm_chart_Tests
     steps:
       # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+
       # Buildkit setup
       - uses: ./.github/actions/buildx-setup
 
