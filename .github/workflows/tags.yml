@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: ./.github/actions/unit-tests/
+      - uses: ./.github/actions/unit-tests
 
   Integration_Tests:
     runs-on: ubuntu-latest
@@ -21,7 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: ./.github/actions/integration-tests/
+      - uses: ./.github/actions/integration-tests
+        with:
+          XOAUTH2_RELAYHOST_USERNAME: ${{ secrets.XOAUTH2_RELAYHOST_USERNAME }}
+          XOAUTH2_CLIENT_ID: ${{ secrets.XOAUTH2_CLIENT_ID }}
+          XOAUTH2_SECRET: ${{ secrets.XOAUTH2_SECRET }}
+          XOAUTH2_INITIAL_REFRESH_TOKEN: ${{ secrets.XOAUTH2_INITIAL_REFRESH_TOKEN }}
+
   Helm_chart_Tests:
     runs-on: ubuntu-latest
     steps:
@@ -29,7 +35,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: ./.github/actions/helm-chart-tests/
+      - uses: ./.github/actions/helm-chart-tests
 
   Build_Alpine:
     runs-on: ubuntu-latest
@@ -45,7 +51,7 @@ jobs:
           fetch-depth: 0
 
       # Buildkit setup
-      - uses: ./.github/actions/buildx-setup/
+      - uses: ./.github/actions/buildx-setup
 
       # Docker hub login
       - uses: ./.github/actions/docker-hub-login
@@ -97,7 +103,7 @@ jobs:
           fetch-depth: 0
 
       # Buildkit setup
-      - uses: ./.github/actions/buildx-setup/
+      - uses: ./.github/actions/buildx-setup
 
       # Docker hub login
       - uses: ./.github/actions/docker-hub-login
