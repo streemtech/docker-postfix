@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 # Do a multistage build
 
 export DOCKER_BUILDKIT=1
@@ -31,14 +31,14 @@ if [[ "$*" == *--push* ]]; then
 fi
 
 arg_list=" --cache-to type=local,dest=${cache_to}"
-if [[ -f "${cache_form}/index.json" ]]; then
-    arg_list="$arg_list --cache-from type=local,src=${cache_form}"
+if [[ -f "${cache_from}/index.json" ]]; then
+    arg_list="$arg_list --cache-from type=local,src=${cache_from}"
 else
-    mkdir -p "${cache_form}"
+    mkdir -p "${cache_from}"
 fi
 
 #if [[ -z "$PLATFORMS" ]]; then
-#    arg_list="$arg_list --platforms linux/amd64,linux/arm64,linux/arm/v7"
+#    arg_list="$arg_list --platform linux/amd64,linux/arm64,linux/arm/v7"
 #fi
 
 docker buildx build ${arg_list} . $*
