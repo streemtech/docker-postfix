@@ -8,14 +8,15 @@ COPY ./build-scripts ./build-scripts
 
 # ============================ INSTALL BASIC SERVICES ============================
 FROM ${BASE_IMAGE} AS base
+ARG TARGETPLATFORM
 
 # Install supervisor, postfix
 # Install postfix first to get the first account (101)
 # Install opendkim second to get the second account (102)
-RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
-           --mount=type=cache,target=/var/lib/apt,sharing=locked \
-           --mount=type=cache,target=/var/cache/apk,sharing=locked \
-           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
+RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
+           --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
+           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
+           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
            --mount=type=tmpfs,target=/tmp \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
            sh /build-scripts/postfix-install.sh
@@ -23,14 +24,14 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # ============================ BUILD SASL XOAUTH2 ============================
 FROM base AS sasl
 
+ARG TARGETPLATFORM
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
 ARG SASL_XOAUTH2_GIT_REF=release-0.12
 
-RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked \
-           --mount=type=cache,target=/var/lib/apt,sharing=locked \
-           --mount=type=cache,target=/var/cache/apk,sharing=locked \
-           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
-           --mount=type=cache,target=/etc/apk/cache,sharing=locked \
+RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
+           --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
+           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
+           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
            --mount=type=tmpfs,target=/tmp \
            --mount=type=tmpfs,target=/sasl-xoauth2 \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \

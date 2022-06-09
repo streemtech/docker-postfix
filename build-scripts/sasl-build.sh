@@ -15,7 +15,7 @@ if [ -f /etc/alpine-release ]; then
     apk add --upgrade --virtual .build-deps git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev
     do_build
     apk del .build-deps;
-else \
+else
     . /etc/lsb-release
     apt-get update -y -qq
     LIBS="git build-essential cmake pkg-config libcurl4 libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev"
