@@ -264,6 +264,9 @@ EOF
 			exit 1
 		fi
 
+		# Note that this is not an error. sasl-xoauth2 expect the password to be stored
+		# in a file, which is referenced by the smtp_sasl_password_maps file.
+		export RELAYHOST_PASSWORD_FILENAME=""
 		export RELAYHOST_PASSWORD="/var/spool/postfix/xoauth2-tokens/${RELAYHOST_USERNAME}"
 
 		if [ ! -d "/var/spool/postfix/xoauth2-tokens" ]; then
@@ -284,10 +287,22 @@ EOF
 }
 
 postfix_setup_xoauth2_post_setup() {
+	local other_plugins
 	if [ -n "$XOAUTH2_CLIENT_ID" ] && [ -n "$XOAUTH2_SECRET" ]; then
 		do_postconf -e 'smtp_sasl_security_options='
 		do_postconf -e 'smtp_sasl_mechanism_filter=xoauth2'
 		do_postconf -e 'smtp_tls_session_cache_database=lmdb:${data_directory}/smtp_scache'
+	else
+		# So, this fix should solve the issue #106, when password in the 'smtp_sasl_password_maps' was
+		# read as file instead of the actual password. It turns out that  the culprit is the sasl-xoauth2
+		# plugin, which expect the filename in place of the password. And as the plugin injects itself
+		# automatically in the list of SASL login mechanisms, it tries to read the password as a file and --
+		# naturally -- fails.
+		# 
+		# The fix is therefore simple: If we're not using OAuth2, we remove the plugin from the list and
+		# keep all the plugins installed.
+		other_plugins="$(pluginviewer -c | grep Plugin | cut -d\  -f2 | cut -c2- | rev | cut -c2- | rev | grep -v EXTERNAL | grep -v sasl-xoauth2 | tr '\n' ',' | rev | cut -c2- | rev)"
+		do_postconf -e "smtp_sasl_mechanism_filter=${other_plugins}"
 	fi
 }
 
