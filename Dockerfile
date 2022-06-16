@@ -13,10 +13,11 @@ ARG TARGETPLATFORM
 # Install supervisor, postfix
 # Install postfix first to get the first account (101)
 # Install opendkim second to get the second account (102)
+#           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
+#           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
 RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
            --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
-           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
-           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
+           --mount=type=tmpfs,target=/var/cache/apk \
            --mount=type=tmpfs,target=/tmp \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
            sh /build-scripts/postfix-install.sh
@@ -28,10 +29,11 @@ ARG TARGETPLATFORM
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
 ARG SASL_XOAUTH2_GIT_REF=release-0.12
 
+#           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
+#           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
 RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
            --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
-           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
-           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
+           --mount=type=tmpfs,target=/var/cache/apk \
            --mount=type=tmpfs,target=/tmp \
            --mount=type=tmpfs,target=/sasl-xoauth2 \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
@@ -61,3 +63,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD print
 
 EXPOSE     587
 CMD        [ "/bin/sh", "-c", "/scripts/run.sh" ]
+
