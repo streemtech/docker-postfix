@@ -145,6 +145,8 @@ jobs:
       - Unit_Tests
       - Integration_Tests
       - Helm_chart_Tests
+      - Build_Alpine
+      - Build_Ubuntu
 
     steps:
       # Checkout
