@@ -21,6 +21,45 @@ service:
   annotations: {}
   # nodePort:
 
+metrics:
+  enabled: false
+  service:
+    labels: {}
+    annotations: {}
+  serviceMonitor:
+    enabled: false
+    labels: {}
+    annotations: {}
+  port: 9154
+  path: /metrics
+  image: 
+    repository: "boky/postfix-exporter"
+    tag: "latest"
+
+  # Warning: Metrics needs a file to work. If you're using this DO NOT override POSTFIX_maillog_file.
+  # If you do, metrics *will not work*. If you need to log to file:
+  # - use this file
+  # - add another file to /etc/rsyslog.d/*.conf
+  maillog: /var/log/mail.log
+  logrotate:
+    enabled: true
+    image: 
+      repository: "blacklabelops/logrotate"
+      tag: "latest"
+    logrotate.conf: |
+      /var/log/mail.log {
+          rotate 1
+          monthly
+          minsize 1M
+          compress
+          missingok
+          notifempty
+          dateext
+          olddir /var/log/old
+          maxage 90
+      }
+
+
 # Tell helm to restart (recreate) pods on every deploy. Setting this to true will inject
 # `date/deploy-date: <timestamp>` annotation into pod specification for StateFulset. This
 # ensures that the Pod is recreated with the new changes.
@@ -80,9 +119,11 @@ container:
   postfix:
     securityContext: {}
 
-# Auto-generate certificates for the server and mount them into Postfix volume
 certs:
+  # Auto-generate certificates for the server and mount them into Postfix volume
   create: false
+  # Provide existing cert
+  existing: false
 
 # Define data which should be stored in a Secret
 # (and shared with the pod as environment variables)
@@ -161,7 +202,6 @@ livenessProbe:
       - >-
         ps axf | fgrep -v grep | egrep -q '\{supervisord\}|/usr/bin/supervisord' &&
         ps axf | fgrep -v grep | egrep -q '(/usr/lib/postfix/sbin/|/usr/libexec/postfix/)master'
-
 startupProbe:
   initialDelaySeconds: 5
   periodSeconds: 5

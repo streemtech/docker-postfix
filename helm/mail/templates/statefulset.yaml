@@ -95,11 +95,17 @@ spec:
           {{ with .Values.extraEnv }}env: {{- toYaml . | nindent 12 }}{{ end }}
           volumeMounts:
             - mountPath: /var/spool/postfix
-              name: {{ $fullName }}
-            - mountPath: /var/spool/postfix/private
-              name: private
-            - mountPath: /var/spool/postfix/public
-              name: public
+              name: {{ $fullName | quote }}
+              subPath: spool
+            {{- if .Values.metrics.enabled }}
+            - name: metrics-config
+              mountPath: /etc/rsyslog.d-metrics/maillog.conf
+              subPath: maillog.conf
+            - name: {{ $fullName }}
+              mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
+              readOnly: false
+              subPath: logs
+            {{- end }}
             {{- if .Values.certs.create }}
             - name: certs
               mountPath: /var/run/certs
@@ -116,16 +122,71 @@ spec:
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.metrics.enabled }}
+        - name: exporter
+          imagePullPolicy: Always
+          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: {{ .Values.metrics.port }}
+              name: metrics
+              protocol: TCP
+          command:
+            - sh
+            - -c
+          args:
+            - |-
+              /bin/postfix_exporter 
+                --web.listen-address {{ .Values.metrics.port }}
+                --web.telemetry-path {{ .Values.metrics.path | quote }} 
+                --postfix.logfile_path {{ .Values.metrics.maillog | quote }}
+                --postfix.showq_path /var/spool/postfix/public/showq
+          volumeMounts:
+            - name: {{ $fullName | quote }}
+              mountPath: /var/spool/postfix
+              subPath: spool
+            - name: {{ $fullName | quote }}
+              mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
+              subPath: logs
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  [ -f {{ .Values.metrics.maillog | quote }} ] && grep -qi "starting the Postfix mail system" {{ .Values.metrics.maillog | quote }}
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.metrics.path | quote }} 
+              port: {{ .Values.metrics.port }}
+            initialDelaySeconds: 5
+        {{- if .Values.metrics.logrotate.enabled }}
+        - name: logrotate
+          image: "{{ .Values.metrics.logrotate.image.repository }}:{{ .Values.metrics.logrotate.image.tag | default "latest" }}"
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  [ -f {{ .Values.metrics.maillog | quote }} ] && grep -qi "starting the Postfix mail system" {{ .Values.metrics.maillog | quote }}
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: {{ $fullName | quote }}
+              mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
+              subPath: logs
+            - mountPath: /etc/logrotate.d/logrotate.conf
+              name: metrics-config
+              subPath: logrotate.conf
+        {{- end }}
+        {{- end }}
         {{- if .Values.extraContainers }}
         {{- tpl .Values.extraContainers $root | nindent 8 }}
         {{- end }}
       volumes:
-        # Socket directories
-        - name: public
-          emptyDir: {}
-        - name: private
-          emptyDir: {}
-        {{- if .Values.certs.create }}
+            {{- if .Values.certs.create }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}
@@ -134,6 +195,7 @@ spec:
           secret:
             secretName: {{ $fullName }}-certs
         {{- end }}
+        # Socket directories
         {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: {{ $fullName }}
           persistentVolumeClaim:
@@ -148,6 +210,11 @@ spec:
         - name: mount-secret
           secret:
             secretName: {{ $fullName }}-mount
+        {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - name: metrics-config
+          configMap:
+            name: metrics-config
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}

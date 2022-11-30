@@ -4,3 +4,4 @@ public
 gh-pages
 .env
 cache
+postfix_exporter

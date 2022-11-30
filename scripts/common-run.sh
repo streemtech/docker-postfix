@@ -608,6 +608,11 @@ postfix_custom_commands() {
 		value="${!setting}"
 		if [ -n "${value}" ]; then
 			info "Applying custom postfix setting: ${emphasis}${key}=${value}${reset}"
+			if [ "${key}" == "maillog_dir" ]; then
+				warn "You're overriding ${emphasis}${key}${reset}. This image has a lot of assumptions about logs going to syslog."
+				warn "Make sure you know what you're doing. Most likely you will want to add an additional file to ${emphasis}/etc/rsyslog.d/${reset}."
+			fi
+
 			do_postconf -e "${key}=${value}"
 		else
 			info "Deleting custom postfix setting: ${emphasis}${key}${reset}"
