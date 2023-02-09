@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
 
 ARG BASE_IMAGE=alpine:latest
-# ARG BASE_IMAGE=ubuntu:focal
+# ARG BASE_IMAGE=ubuntu:jammy
 
 FROM ${BASE_IMAGE} AS build-scripts
 COPY ./build-scripts ./build-scripts
@@ -27,12 +27,13 @@ FROM base AS sasl
 
 ARG TARGETPLATFORM
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
-ARG SASL_XOAUTH2_GIT_REF=release-0.14
+ARG SASL_XOAUTH2_GIT_REF=release-0.18
 
 #           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
 #           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
 RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
            --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
+           --mount=type=tmpfs,target=/etc/apk/cache \
            --mount=type=tmpfs,target=/var/cache/apk \
            --mount=type=tmpfs,target=/tmp \
            --mount=type=tmpfs,target=/sasl-xoauth2 \
