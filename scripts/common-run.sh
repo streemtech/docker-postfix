@@ -5,7 +5,7 @@ announce_startup() {
 }
 
 setup_timezone() {
-	if [ ! -z "$TZ" ]; then
+	if [[ ! -z "$TZ" ]]; then
 		TZ_FILE="/usr/share/zoneinfo/$TZ"
 		if [ -f "$TZ_FILE" ]; then
 			notice "Setting container timezone to: ${emphasis}$TZ${reset}"
@@ -99,6 +99,41 @@ reown_folders() {
 
 	# postfix set-permissions complains if documentation files do not exist
 	postfix -c /etc/postfix/ set-permissions > /dev/null 2>&1 || true
+}
+
+postfix_enable_chroot() {
+	# Fix Kubernetes not mounting NSS configuration (https://github.com/kubernetes/kubernetes/issues/71082)
+	if [[ ! -e /etc/nsswitch.conf ]]; then
+		notice "Creating file ${emphasis}/etc/nsswitch.conf${reset}. See https://github.com/kubernetes/kubernetes/issues/71082"
+		if ! echo 'hosts: files dns' > /etc/nsswitch.conf; then
+			warn "Could not write ${emphasis}/etc/nsswitch.conf${reset}. Postfix will still start, but check https://github.com/kubernetes/kubernetes/issues/71082 for more info."
+		fi
+	fi
+
+	# Adapted from example Linux chroot in Postfix sources examples/chroot-setup/LINUX2
+	echo "Fix Postfix chroot"
+	if [[ -z "${POSTFIXD_DIR}" ]]; then
+		POSTFIXD_DIR=/var/spool/postfix
+	fi
+	if [[ -z "${POSTFIXD_ETC}" ]]; then
+		POSTFIXD_ETC="${POSTFIXD_DIR}/etc"
+	fi
+	if [[ -z "${POSTFIX_ZIF}" ]]; then
+		POSTFIXD_ZIF="${POSTFIXD_DIR}/usr/lib/zoneinfo"
+	fi
+	(
+		umask 022
+		[[ -d "$POSTFIXD_ETC" ]]    && mkdir -pv                  $POSTFIXD_ETC || true
+		[[ -d "$POSTFIXD_ZIF" ]]    && mkdir -pv                  $POSTFIXD_ZIF || true
+		[[ -e /etc/localtime ]]     && ln -fsv /etc/localtime     $POSTFIXD_ZIF || true
+		[[ -e /etc/localtime ]]     && cp -fpv /etc/localtime     $POSTFIXD_ETC || true
+		[[ -e /etc/nsswitch.conf ]] && cp -fpv /etc/nsswitch.conf $POSTFIXD_ETC || true
+		[[ -e /etc/resolv.conf ]]   && cp -fpv /etc/resolv.conf   $POSTFIXD_ETC || true
+		[[ -e /etc/services ]]      && cp -fpv /etc/services      $POSTFIXD_ETC || true
+		[[ -e /etc/host.conf ]]     && cp -fpv /etc/host.conf     $POSTFIXD_ETC || true
+		[[ -e /etc/hosts ]]         && cp -fpv /etc/hosts         $POSTFIXD_ETC || true
+		[[ -e /etc/passwd ]]        && cp -fpv /etc/passwd        $POSTFIXD_ETC || true
+	)
 }
 
 postfix_upgrade_conf() {

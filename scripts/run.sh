@@ -10,6 +10,7 @@ rsyslog_log_format                  # Setup rsyslog output format
 anon_email_log                      # Setup email anonymizer
 setup_conf                          # Copy over files from /etc/postfix.template to /etc/postfix, if the user mounted the folder manually
 reown_folders                       # Make and reown /var/spool/postfix/ folders
+postfix_enable_chroot               # Allow Postfix to run in chroot
 postfix_upgrade_conf                # Upgrade old coniguration, replace "hash:" and "btree:" databases to "lmdb:"
 postfix_disable_utf8                # Disable SMTPUTF8, because libraries (ICU) are missing in alpine
 postfix_create_aliases              # Update aliases database. It's not used, but postfix complains if the .db file is missing
