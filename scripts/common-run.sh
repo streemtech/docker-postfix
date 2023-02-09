@@ -111,7 +111,8 @@ postfix_enable_chroot() {
 	fi
 
 	# Adapted from example Linux chroot in Postfix sources examples/chroot-setup/LINUX2
-	echo "Fix Postfix chroot"
+	info "Preparing files for Postfix chroot:"
+
 	if [[ -z "${POSTFIXD_DIR}" ]]; then
 		POSTFIXD_DIR=/var/spool/postfix
 	fi
@@ -133,7 +134,7 @@ postfix_enable_chroot() {
 		[[ -e /etc/host.conf ]]     && cp -fpv /etc/host.conf     $POSTFIXD_ETC || true
 		[[ -e /etc/hosts ]]         && cp -fpv /etc/hosts         $POSTFIXD_ETC || true
 		[[ -e /etc/passwd ]]        && cp -fpv /etc/passwd        $POSTFIXD_ETC || true
-	)
+	) | sed 's/^/        /g'
 }
 
 postfix_upgrade_conf() {
