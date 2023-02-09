@@ -1,0 +1,10 @@
+container:
+  postfix:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault

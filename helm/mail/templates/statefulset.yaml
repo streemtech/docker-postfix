@@ -62,7 +62,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          securityContext: {{- toYaml .Values.container.postfix.securityContext | indent 12 }}
+          securityContext: {{- toYaml .Values.container.postfix.securityContext | nindent 12 }}
           ports:
             - name: smtp
               containerPort: 587
