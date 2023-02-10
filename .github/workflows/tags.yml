@@ -63,9 +63,9 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-alpine-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-alpine-
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
@@ -82,7 +82,7 @@ jobs:
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all packages for 386 any more :-(
           platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
-          cache-from: type=local,src=/tmp/.buildx-cache/alpine
+          cache-from: type=local,src=/tmp/.buildx-cache/alpine,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |
             BASE_IMAGE=alpine:latest
@@ -118,9 +118,9 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-ubuntu-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-ubuntu-
 
       - name: Build and push Ubuntu
         uses: docker/build-push-action@v4
@@ -129,10 +129,10 @@ jobs:
           push: true
           tags: boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
           platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
-          cache-from: type=local,src=/tmp/.buildx-cache/ubuntu
+          cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
           build-args: |
-            BASE_IMAGE=ubuntu:impish
+            BASE_IMAGE=ubuntu:jammy
 
       - name: Move cache
         run: |
