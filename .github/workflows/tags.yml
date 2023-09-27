@@ -71,7 +71,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: postfix_exporter
           push: true
           tags: |
             boky/postfix-exporter:${{ env.RELEASE_VERSION }}
