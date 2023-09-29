@@ -19,7 +19,6 @@ for i in `${FIND} -maxdepth 1 -type f -name test\*yml | sort`; do
         -v "${SCRIPT_DIR}/fixtures:/fixtures" \
         -v "${SCRIPT_DIR}/schemas:/schemas" \
         garethr/kubeval \
-            --force-color \
             --additional-schema-locations file:///schemas \
             fixtures/demo.yaml
 done
