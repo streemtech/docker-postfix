@@ -46,6 +46,7 @@ Simple postfix relay host ("postfix null client") for your Docker containers. Ba
       - [Verifying your DKIM setup](#verifying-your-dkim-setup)
     - [Docker Secrets / Kubernetes secrets](#docker-secrets--kubernetes-secrets)
   - [Helm chart](#helm-chart)
+    - [Metrics](#metrics)
   - [Extending the image](#extending-the-image)
     - [Using custom init scripts](#using-custom-init-scripts)
   - [Security](#security)
@@ -616,6 +617,16 @@ Chart configuration is as follows:
 | `persistence.size` | `1Gi` | Storage size |
 | `persistence.storageClass` | `""` | Storage class |
 | `recreateOnRedeploy` | `true` | Restart Pods on every helm deployment, to prevent issues with stale configuration(s). |
+
+### Metrics
+
+You may enable metrics on the cart by simply setting `metrics.enabled=true`. Of course, this comes with some caveats, namely:
+
+- Postfix logs will (by default, if you don't override this) go to `/var/log/mail.log` _as well_ as to stdout.
+- `/var/log/mail.log` will be in plain-text format (always), no matter what you set `LOG_FORMAT` to
+
+Please se helm chart's `values.yaml` for further configuration options and how to enable `ServiceMonitor`, if you need it for
+Prometheus.
 
 ## Extending the image
 
