@@ -232,7 +232,8 @@ jobs:
           fetch-depth: 0
 
       # Release version setup
-      - uses: ./.github/actions/get-release-version
+      - name: version_number
+        uses: ./.github/actions/get-release-version
 
       - name: Checkout gh-pages
         uses: actions/checkout@v4
@@ -268,6 +269,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v3
         with:
           exec: cd gh-pages && rm -rf .git && helm repo index . --url https://bokysan.github.io/docker-postfix
+
       - name: Upload gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
