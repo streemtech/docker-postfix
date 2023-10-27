@@ -1,7 +1,8 @@
 .idea
-helm/fixtures
-public
-gh-pages
+helm/fixtures/
+public/
+gh-pages/
 .env
 cache
-postfix_exporter
+postfix_exporter/
+logrotate/

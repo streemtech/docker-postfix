@@ -1,6 +1,14 @@
 name: 'Build the postfix-exporter'
 description: 'Build the latest version of postfix-exporter'
 
+inputs:
+  DOCKER_ACCESS_TOKEN:
+    description: 'DOCKER_ACCESS_TOKEN'
+    required: true
+  tags:
+    description: 'Docker image tags'
+    required: true
+
 runs:
   using: "composite"
   steps:

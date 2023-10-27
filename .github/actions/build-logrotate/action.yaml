@@ -1,6 +1,14 @@
 name: 'Build the logrotate'
 description: 'Build the latest version of logrotate'
 
+inputs:
+  DOCKER_ACCESS_TOKEN:
+    description: 'DOCKER_ACCESS_TOKEN'
+    required: true
+  tags:
+    description: 'Docker image tags'
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -10,6 +18,12 @@ runs:
         repository: blacklabelops/logrotate
         path: 'logrotate'
         ref: 'fdab0abc0b3f2917052e5d509e14e2b71d7fd9b3' # Latest commit we know that works
+
+    - name: Apply patches
+      shell: bash
+      run: |
+        cd logrotate
+        git apply ../logrotate-*.patch
 
     # Buildkit setup
     - uses: ./.github/actions/buildx-setup

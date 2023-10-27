@@ -1,0 +1,12 @@
+diff --git a/Dockerfile b/Dockerfile
+index 8cc3c6d..dc4c6cb 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,5 +1,5 @@
+-FROM blacklabelops/alpine:3.8
+-MAINTAINER Steffen Bleul <sbl@blacklabelops.com>
++FROM alpine:latest
++LABEL maintainer="Steffen Bleul <sbl@blacklabelops.com>"
+ 
+ # logrotate version (e.g. 3.9.1-r0)
+ ARG LOGROTATE_VERSION=latest
