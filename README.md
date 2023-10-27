@@ -625,7 +625,7 @@ You may enable metrics on the cart by simply setting `metrics.enabled=true`. Of 
 - Postfix logs will (by default, if you don't override this) go to `/var/log/mail.log` _as well_ as to stdout.
 - `/var/log/mail.log` will be in plain-text format (always), no matter what you set `LOG_FORMAT` to
 
-Please se helm chart's `values.yaml` for further configuration options and how to enable `ServiceMonitor`, if you need it for
+Please see helm chart's `values.yaml` for further configuration options and how to enable `ServiceMonitor`, if you need it for
 Prometheus.
 
 ## Extending the image
