@@ -51,6 +51,7 @@ jobs:
         with:
           repository: kumina/postfix_exporter
           path: 'postfix_exporter'
+          ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
 
       # Buildkit setup
       - uses: ./.github/actions/buildx-setup
@@ -125,6 +126,8 @@ jobs:
           context: .
           push: true
           tags: |
+            boky/postfix:latest
+            boky/postfix:latest-alpine
             boky/postfix:${{ env.RELEASE_VERSION }}
             boky/postfix:${{ env.RELEASE_VERSION }}-alpine
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}
@@ -178,6 +181,7 @@ jobs:
           context: .
           push: true
           tags: |
+            boky/postfix:latest-ubuntu
             boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-ubuntu
           platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"

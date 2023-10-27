@@ -76,7 +76,7 @@ jobs:
           push: true
           tags: |
             boky/postfix-exporter:latest
-            boky/postfix-exporter:latest
+            boky/postfix-exporter:edge
           platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
           cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
@@ -124,8 +124,8 @@ jobs:
           context: .
           push: true
           tags: |
-            boky/postfix:latest
-            boky/postfix:latest-alpine
+            boky/postfix:edge
+            boky/postfix:edge-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all the packages for 386 anymore. :-(
           platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
@@ -172,7 +172,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: boky/postfix:latest-ubuntu
+          tags: boky/postfix:edge-ubuntu
           platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu

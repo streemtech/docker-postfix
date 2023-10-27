@@ -11,6 +11,7 @@ Simple postfix relay host ("postfix null client") for your Docker containers. Ba
   - [Description](#description)
   - [TL;DR](#tldr)
   - [Updates](#updates)
+    - [v4.0.0](#v400)
     - [v3.0.0](#v300)
   - [Architectures](#architectures)
   - [Configuration options](#configuration-options)
@@ -113,6 +114,22 @@ to host a SMTP server on a dynamic IP address.
 by ISPs, already occupied by other services, and in general should only be used for server-to-server communication.
 
 ## Updates
+
+### v4.0.0
+
+Several potentially "surprising" changes went into this issue and hence warrant a version upgrade:
+
+- Helm charts are now built with `v` and without `v` prefix.
+  As seen in [PR #141](https://github.com/bokysan/docker-postfix/pull/141) some tools rely on version not
+  having the prefix. I've seen both in the wild, so the image
+  now includes both. This should work and should hopefully provide most compatibility.
+- [master](https://github.com/bokysan/docker-postfix/tree/master/) branch now builds images called `edge`. `latest`
+  images are built from the last tag. We've had several issues
+  with people using the `latest` tag and reporting problems.
+  You can now rely on `latest` being the latest stable release.
+- Image now builds its own version of [postfix-exporter](https://github.com/kumina/postfix_exporter) and relies on this
+  third-party project. Checkout is from master branch, based
+  on specific SHA commit id. The same hash is used for master and tags.
 
 ### v3.0.0
 
