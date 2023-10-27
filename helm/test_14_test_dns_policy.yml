@@ -3,7 +3,10 @@ dns:
   nameservers:
     - "8.8.8.8"
     - "8.8.4.4"
-  searches: "default.svc.cluster.local svc.cluster.local cluster.local"
+  searches:
+    - default.svc.cluster.local 
+    - svc.cluster.local 
+    - cluster.local
   options:
     - name: ndots
       value: "5"
