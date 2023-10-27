@@ -150,3 +150,48 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  Build_Debian:
+    runs-on: ubuntu-latest
+    needs:
+      - Unit_Tests
+      - Integration_Tests
+      - Helm_chart_Tests
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Buildkit setup
+      - uses: ./.github/actions/buildx-setup
+
+      # Docker hub login
+      - uses: ./.github/actions/docker-hub-login
+        with:
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
+          key: ${{ runner.os }}-debian-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-debian-
+
+      - name: Build and push Debian
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: boky/postfix:edge-debian
+          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/s390x"
+          cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
+          cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
+          build-args: |
+            BASE_IMAGE=debian:bookworm
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+

@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+fi
 
 do_alpine() {
     apk update
@@ -11,13 +14,17 @@ do_alpine() {
 }
 
 do_ubuntu() {
+    RELEASE_SPECIFIC_PACKAGES="netcat"
+    if [ "${ID}" -eq "debian" ]; then
+        RELEASE_SPECIFIC_PACKAGES="netcat-openbsd"
+    fi
     export DEBIAN_FRONTEND=noninteractive
     echo "Europe/Berlin" > /etc/timezone
     apt-get update -y -q
     apt-get install -y libsasl2-modules
     apt-get install -y postfix
     apt-get install -y opendkim
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb netcat logrotate cron
+    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb logrotate cron
 }
 
 if [ -f /etc/alpine-release ]; then

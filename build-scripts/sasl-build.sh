@@ -19,13 +19,14 @@ do_build() {
 }
 
 if [ -f /etc/alpine-release ]; then
-    apk add --upgrade --virtual .build-deps git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch
+    apk add --upgrade --virtual .build-deps git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch pandoc
     do_build
     apk del .build-deps;
 else
-    . /etc/lsb-release
+    [ -f /etc/lsb-release ] && . /etc/lsb-release
+    [ -f /etc/os-release ] && . /etc/os-release
     apt-get update -y -qq
-    LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev"
+    LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev pandoc"
     apt-get install -y --no-install-recommends ${LIBS}
     do_build
     apt-get remove --purge -y ${LIBS}

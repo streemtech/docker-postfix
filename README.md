@@ -130,6 +130,9 @@ Several potentially "surprising" changes went into this issue and hence warrant 
 - Image now builds its own version of [postfix-exporter](https://github.com/kumina/postfix_exporter) and relies on this
   third-party project. Checkout is from master branch, based
   on specific SHA commit id. The same hash is used for master and tags.
+- **Architecture galore!** With the addition of debian images, we now support support more architectures than ever. The list includes: 
+  `linux/386`, `linux/amd64`, `linux/arm/v5`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64`, `linux/arm64/v8`, `linux/mips64le`, 
+  `linux/ppc64le` and `linux/s390x`.
 
 ### v3.0.0
 
