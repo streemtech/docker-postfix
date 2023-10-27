@@ -12,6 +12,7 @@ runs:
         ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
 
     - name: Apply patches
+      shell: bash
       run: |
         cd postfix_exporter
         git apply ../postfix-exporter-*.patch
@@ -22,7 +23,7 @@ runs:
     # Docker hub login
     - uses: ./.github/actions/docker-hub-login
       with:
-        DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+        DOCKER_ACCESS_TOKEN: '${{ inputs.DOCKER_ACCESS_TOKEN }}'
 
     - name: Cache Docker layers
       uses: actions/cache@v3
