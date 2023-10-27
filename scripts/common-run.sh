@@ -75,18 +75,18 @@ reown_folders() {
 	if [[ "${SKIP_ROOT_SPOOL_CHOWN}" == "1" ]]; then
 		warn "${emphasis}SKIP_ROOT_SPOOL_CHOWN${reset} is set. Script will not chown ${emphasis}/var/spool/postfix/${reset}. Make sure you know what you're doing."
 	else
-		debug "Reowing ${emphasis}root: /var/spool/postfix/${reset}"
+		debug "Reowning ${emphasis}root: /var/spool/postfix/${reset}"
 		if ! chown root: /var/spool/postfix/; then
 			warn "Cannot reown ${emphasis}root:${reset} for ${emphasis}/var/spool/postfix/${reset}. Your installation might be broken."
 		fi
 
-		debug "Reowing ${emphasis}root: /var/spool/postfix/pid/${reset}"
+		debug "Reowning ${emphasis}root: /var/spool/postfix/pid/${reset}"
 		if ! chown root: /var/spool/postfix/pid; then
 			warn "Cannot reown ${emphasis}root:${reset} for ${emphasis}/var/spool/postfix/pid/${reset}. Your installation might be broken."
 		fi
 	fi
 
-	debug "Reowing ${emphasis}postfix:postdrop /var/spool/postfix/private/${reset}"
+	debug "Reowning ${emphasis}postfix:postdrop /var/spool/postfix/private/${reset}"
 	if ! chown -R postfix:postdrop /var/spool/postfix/private; then
 		warn "Cannot reown ${emphasis}postfix:postdrop${reset} for ${emphasis}/var/spool/postfix/private${reset}. Your installation might be broken."
 	fi
