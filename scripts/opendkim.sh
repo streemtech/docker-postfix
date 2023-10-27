@@ -13,7 +13,7 @@ if [ ! -d /etc/opendkim/keys ]; then
 elif [ -z "$(find /etc/opendkim/keys -type f ! -name .)" ]; then
     noop
 else
-    /usr/sbin/opendkim -D -f -x /etc/opendkim/opendkim.conf
+    exec /usr/sbin/opendkim -D -f -x /etc/opendkim/opendkim.conf
 fi
 
 

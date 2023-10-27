@@ -7,7 +7,7 @@ do_alpine() {
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm
     apk add postfix
     apk add opendkim
-    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb
+    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate
 }
 
 do_ubuntu() {
@@ -17,7 +17,7 @@ do_ubuntu() {
     apt-get install -y libsasl2-modules
     apt-get install -y postfix
     apt-get install -y opendkim
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb netcat
+    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb netcat logrotate cron
 }
 
 if [ -f /etc/alpine-release ]; then

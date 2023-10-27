@@ -43,9 +43,6 @@ metrics:
   maillog: /var/log/mail.log
   logrotate:
     enabled: true
-    image: 
-      repository: "boky/logrotate"
-      tag: "latest"
     logrotate.conf: |
       /var/log/mail.log {
           rotate 1
@@ -55,7 +52,7 @@ metrics:
           missingok
           notifempty
           dateext
-          olddir /var/log/old
+          olddir /var/log/
           maxage 90
       }
 

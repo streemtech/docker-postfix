@@ -1,2 +1,2 @@
 #!/bin/sh
-/usr/sbin/postfix -c /etc/postfix start-fg
+exec /usr/sbin/postfix -c /etc/postfix start-fg

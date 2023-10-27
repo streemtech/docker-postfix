@@ -14,4 +14,16 @@ data:
   maillog.conf: |
     template(name="metricslog" type="string" string={{ .Values.metrics.path | quote }})
     action(type="omfile" DynaFile="metricslog" template="plain" DirCreateMode="0755" FileCreateMode="0644")
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ print $fullName "-scripts" | quote }}
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  logrotate.sh: |
+    #!/bin/sh
+    set -e
+    exec /usr/sbin/logrotate /etc/logrotate.d/logrotate.conf
 {{- end }}

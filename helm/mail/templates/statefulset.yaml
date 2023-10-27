@@ -105,6 +105,17 @@ spec:
               mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
               readOnly: false
               subPath: logs
+            {{- if .Values.metrics.logrotate.enabled }}
+            - name: metrics-config
+              mountPath: /etc/logrotate.d/logrotate.conf
+              subPath: logrotate.conf
+            - name: metrics-config-scripts
+              mountPath: /etc/cron.hourly/ # Ubuntu
+              subPath: logrotate.sh
+            - name: metrics-config-scripts
+              mountPath: /etc/periodic/hourly # Alpine
+              subPath: logrotate.sh
+            {{- end }}
             {{- end }}
             {{- if .Values.certs.create }}
             - name: certs
@@ -161,26 +172,6 @@ spec:
               path: {{ .Values.metrics.path | quote }} 
               port: {{ .Values.metrics.port }}
             initialDelaySeconds: 5
-        {{- if .Values.metrics.logrotate.enabled }}
-        - name: logrotate
-          image: "{{ .Values.metrics.logrotate.image.repository }}:{{ .Values.metrics.logrotate.image.tag | default "latest" }}"
-          startupProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - >-
-                  [ -f {{ .Values.metrics.maillog | quote }} ] && grep -qi "starting the Postfix mail system" {{ .Values.metrics.maillog | quote }}
-            failureThreshold: 30
-            periodSeconds: 10
-          volumeMounts:
-            - name: {{ $fullName | quote }}
-              mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
-              subPath: logs
-            - mountPath: /etc/logrotate.d/logrotate.conf
-              name: metrics-config
-              subPath: logrotate.conf
-        {{- end }}
         {{- end }}
         {{- if .Values.extraContainers }}
         {{- tpl .Values.extraContainers $root | nindent 8 }}
@@ -215,6 +206,10 @@ spec:
         - name: metrics-config
           configMap:
             name: {{ print $fullName "-metrics" | quote }}
+        - name: metrics-config-scripts
+          configMap:
+            name: {{ print $fullName "-scripts" | quote }}
+            defaultMode: 0777
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
