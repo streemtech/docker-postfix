@@ -101,7 +101,7 @@ spec:
             - name: metrics-config
               mountPath: /etc/rsyslog.d-metrics/maillog.conf
               subPath: maillog.conf
-            - name: {{ $fullName }}
+            - name: {{ $fullName | quote }}
               mountPath: {{ regexFind "^/?.*/" .Values.metrics.maillog | quote }}
               readOnly: false
               subPath: logs
@@ -214,7 +214,7 @@ spec:
         {{- if .Values.metrics.enabled }}
         - name: metrics-config
           configMap:
-            name: metrics-config
+            name: {{ print $fullName "-metrics" | quote }}
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}

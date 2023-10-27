@@ -84,7 +84,7 @@ or
 
 ```shell script
 helm repo add bokysan https://bokysan.github.io/docker-postfix/
-helm upgrade --install --set persistence.enabled=false --set config.general.ALLOW_EMPTY_SENDER_DOMAINS=1 mail bokysan/mail
+helm upgrade --install --set persistence.enabled=false --set config.general.ALLOW_EMPTY_SENDER_DOMAINS=yes mail bokysan/mail
 ```
 
 You can also find this image at [ArtifactHub](https://artifacthub.io/packages/helm/docker-postfix/mail).

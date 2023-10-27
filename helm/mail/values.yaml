@@ -44,7 +44,7 @@ metrics:
   logrotate:
     enabled: true
     image: 
-      repository: "blacklabelops/logrotate"
+      repository: "boky/logrotate"
       tag: "latest"
     logrotate.conf: |
       /var/log/mail.log {
