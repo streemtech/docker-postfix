@@ -1,5 +1,5 @@
 diff --git a/Dockerfile b/Dockerfile
-index a3327d8..471d70a 100644
+index a3327d8..2b13fbb 100644
 --- a/Dockerfile
 +++ b/Dockerfile
 @@ -1,4 +1,10 @@
@@ -29,7 +29,7 @@ index a3327d8..471d70a 100644
 +# Since we are checking out a specific SHA hash and we know this tests have worked previously, we are quite certain that the code will work.
 +# Hence disabling the test here.
 +# RUN go test
-+RUN env GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" GOARM="$( echo "$TARGETVARIANT" grep -E -o "\\d+$")" go build -ldflags '-extldflags "-static"'  -o /bin/postfix_exporter
++RUN env GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" GOARM="$( echo "$TARGETVARIANT" | grep -E -o "\\d+$")" go build -ldflags '-extldflags "-static"'  -o /bin/postfix_exporter
  
 -FROM debian:latest
 +FROM scratch
