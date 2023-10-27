@@ -3,7 +3,7 @@ set -e
 
 build_pandoc() {
     CAN_INSTALL=1
-    if [ -f /etc/alpine-release ];
+    if [ -f /etc/alpine-release ]; then
         if ! apk add --upgrade pandoc; then
             CAN_INSTALL=0
         fi
@@ -12,7 +12,7 @@ build_pandoc() {
             CAN_INSTALL=0
         fi
     fi
-    if [ -f /etc/alpine-release ];
+    if [ -f /etc/alpine-release ]; then
         apk add --upgrade cabal curl llvm
     else
         apt-get install -y --no-install-recommends cabal curl llvm
