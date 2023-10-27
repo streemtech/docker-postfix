@@ -11,7 +11,8 @@ if command -v gfind >/dev/null 2>&2; then
     FIND="$(which gfind)"
 fi
 
-for i in `${FIND} -maxdepth 1 -type f -name test\*yml | sort`; do
+do_the_test() {
+    local i="${1}"
     echo "☆☆☆☆☆☆☆☆☆☆ $i ☆☆☆☆☆☆☆☆☆☆"
     helm template -f $i --dry-run mail > fixtures/demo.yaml
     docker run \
@@ -21,4 +22,16 @@ for i in `${FIND} -maxdepth 1 -type f -name test\*yml | sort`; do
             --force-color \
             --additional-schema-locations file:///schemas \
             fixtures/demo.yaml
-done
+}
+
+
+if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+        do_the_test "${1}"
+        shift
+    done
+else
+    for i in `${FIND} -maxdepth 1 -type f -name test\*yml | sort`; do
+        do_the_test "${i}"
+    done
+fi

@@ -177,30 +177,10 @@ spec:
         {{- tpl .Values.extraContainers $root | nindent 8 }}
         {{- end }}
       {{- if .Values.dns.policy }}
-      dnsPolicy: {{- .Values.dns.policy }}
+      dnsPolicy: {{ .Values.dns.policy | quote }}
       {{- end }}
       {{- if or .Values.dns.nameservers .Values.dns.searches .Values.dns.options }}
-      dnsConfig:
-        {{- if .Values.dns.nameservers }}
-        nameservers:
-          {{- range .Values.dns.nameservers }}
-          - {{ . }}
-          {{- end }}
-        {{- end }}
-        {{- if .Values.dns.searches }}
-        searches: {{- .Values.dns.searches | nindent 4 }}
-        {{- end }}
-        {{- if .Values.dns.options }}
-        options:
-          {{- range .Values.dns.options }}
-          {{- if .name }}
-          - name: {{ .name }}
-            {{- if .value }}
-            value: {{ .value | quote }}
-            {{- end }}
-          {{- end }}
-          {{- end }}
-        {{- end }}
+      dnsConfig: {{- toYaml (omit .Values.dns "policy") | nindent 8 }}
       {{- end }}
       volumes:
             {{- if .Values.certs.create }}
