@@ -1,11 +1,11 @@
 diff --git a/Dockerfile b/Dockerfile
-index a3327d8..2b13fbb 100644
+index a3327d8..1cdfa84 100644
 --- a/Dockerfile
 +++ b/Dockerfile
 @@ -1,4 +1,10 @@
 -FROM golang:1.16 AS builder
 +# syntax=docker/dockerfile:1.2
-+FROM --platform=$BUILDPLATFORM golang:1.21 AS builder
++FROM golang:1.21.3-bookworm AS builder
 +ARG TARGETPLATFORM
 +ARG TARGETOS
 +ARG TARGETARCH
