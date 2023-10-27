@@ -110,10 +110,10 @@ spec:
               mountPath: /etc/logrotate.d/logrotate.conf
               subPath: logrotate.conf
             - name: metrics-config-scripts
-              mountPath: /etc/cron.hourly/ # Ubuntu
+              mountPath: /etc/cron.hourly/logrotate.sh # Ubuntu
               subPath: logrotate.sh
             - name: metrics-config-scripts
-              mountPath: /etc/periodic/hourly # Alpine
+              mountPath: /etc/periodic/hourly/logrotate.sh # Alpine
               subPath: logrotate.sh
             {{- end }}
             {{- end }}
@@ -142,15 +142,16 @@ spec:
               name: metrics
               protocol: TCP
           command:
-            - sh
-            - -c
+            - /bin/postfix_exporter
           args:
-            - |-
-              /bin/postfix_exporter 
-                --web.listen-address {{ .Values.metrics.port }}
-                --web.telemetry-path {{ .Values.metrics.path | quote }} 
-                --postfix.logfile_path {{ .Values.metrics.maillog | quote }}
-                --postfix.showq_path /var/spool/postfix/public/showq
+            - "--web.listen-address"
+            - {{ print "0.0.0.0:" .Values.metrics.port | quote }}
+            - "--web.telemetry-path"
+            - {{ .Values.metrics.path | quote }}
+            - "--postfix.logfile_path"
+            - {{ .Values.metrics.maillog | quote }}
+            - "--postfix.showq_path"
+            - {{ print "/var/spool/postfix/public/showq" | quote }}
           volumeMounts:
             - name: {{ $fullName | quote }}
               mountPath: /var/spool/postfix
