@@ -94,7 +94,8 @@ jobs:
             boky/postfix:edge-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all the packages for 386 anymore. :-(
-          platforms: "linux/arm/v6,linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le"
+          # Latest Alpine does not have 'pandoc' in 'linux/arm/v7', which means SASL module cannot be built
+          platforms: "linux/arm/v6,linux/amd64,linux/arm64,linux/ppc64le"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |
