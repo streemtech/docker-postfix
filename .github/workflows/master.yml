@@ -42,49 +42,11 @@ jobs:
     needs:
       - Helm_chart_Tests
     steps:
-      # Checkout
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: ./.github/actions/build-postfix-exporter
         with:
-          repository: kumina/postfix_exporter
-          path: 'postfix_exporter'
-          ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
-
-      # Buildkit setup
-      - uses: ./.github/actions/buildx-setup
-
-      # Docker hub login
-      - uses: ./.github/actions/docker-hub-login
-        with:
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-postfix-exporter-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-postfix-exporter-
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: postfix_exporter
-          push: true
           tags: |
             boky/postfix-exporter:latest
             boky/postfix-exporter:edge
-          platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
-          cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
-          cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   Build_Alpine:
     runs-on: ubuntu-latest
@@ -128,7 +90,7 @@ jobs:
             boky/postfix:edge-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all the packages for 386 anymore. :-(
-          platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
+          platforms: "linux/arm/v6,linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |

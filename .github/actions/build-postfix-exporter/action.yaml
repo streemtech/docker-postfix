@@ -1,0 +1,52 @@
+name: 'Build the postfix-exporter'
+description: 'Build the latest version of postfix-exporter'
+
+runs:
+  using: "composite"
+  steps:
+    # Checkout
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: kumina/postfix_exporter
+        path: 'postfix_exporter'
+        ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
+
+    - name: Apply patches
+      run: |
+        cd postfix_exporter
+        git apply ../postfix-exporter-*.patch
+
+    # Buildkit setup
+    - uses: ./.github/actions/buildx-setup
+
+    # Docker hub login
+    - uses: ./.github/actions/docker-hub-login
+      with:
+        DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-postfix-exporter-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-postfix-exporter-
+
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: postfix_exporter
+        push: true
+        tags: '${{ inputs.tags }}'
+        platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
+        cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
+        cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
+
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
