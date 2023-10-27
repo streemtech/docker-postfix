@@ -94,15 +94,13 @@ jobs:
           context: .
           push: true
           tags: |
-            boky/postfix:latest
             boky/postfix:latest-alpine
-            boky/postfix:${{ env.RELEASE_VERSION }}
             boky/postfix:${{ env.RELEASE_VERSION }}-alpine
-            boky/postfix:${{ env.RELEASE_VERSION_NO_v }}
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all packages for 386 any more :-(
-          platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
+          # Pandoc, which is required for SASL build, cannot be found in these images: linux/arm/v7,linux/ppc64le
+          platforms: "linux/arm/v6,linux/amd64,linux/arm64"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |
@@ -199,7 +197,10 @@ jobs:
           context: .
           push: true
           tags: |
+            boky/postfix:latest
             boky/postfix:latest-debian
+            boky/postfix:${{ env.RELEASE_VERSION }}
+            boky/postfix:${{ env.RELEASE_VERSION_NO_v }}
             boky/postfix:${{ env.RELEASE_VERSION }}-debian
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-debian
           platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/s390x"

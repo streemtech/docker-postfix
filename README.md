@@ -119,6 +119,9 @@ by ISPs, already occupied by other services, and in general should only be used 
 
 Several potentially "surprising" changes went into this issue and hence warrant a version upgrade:
 
+- **Default image is now based on Debian.** A lot of packages needed for
+  latest builds are missing in certain Alpine architectures. Debian
+  allows us to have a greater cross-platform availability.
 - Helm charts are now built with `v` and without `v` prefix.
   As seen in [PR #141](https://github.com/bokysan/docker-postfix/pull/141) some tools rely on version not
   having the prefix. I've seen both in the wild, so the image
