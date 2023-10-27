@@ -4,10 +4,6 @@ description: 'Build the latest version of postfix-exporter'
 runs:
   using: "composite"
   steps:
-    # Checkout
-    - name: Checkout
-      uses: actions/checkout@v4
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
