@@ -169,6 +169,20 @@ config:
     # e.g.
     # RequireSafeKeys: "yes"
 
+dns:
+  policy: ""
+  # policy: "None"
+  nameservers: {}
+    # - 8.8.8.8
+    # - 8.8.4.4
+  searches: ""
+  # searches: "default.svc.cluster.local svc.cluster.local cluster.local"
+  options: {}
+  # options:
+  #   ndots:
+  #     - name: ndots
+  #       value: "5"
+
 persistence:
   enabled: true
   accessModes:
