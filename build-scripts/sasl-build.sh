@@ -12,6 +12,11 @@ build_pandoc() {
             CAN_INSTALL=0
         fi
     fi
+
+    if [ "${CAN_INSTALL}" -eq "1" ; then
+        return
+    fi
+
     if [ -f /etc/alpine-release ]; then
         apk add --upgrade cabal curl llvm
     else
