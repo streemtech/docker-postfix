@@ -2,19 +2,14 @@
 set -e
 
 build_pandoc() {
-    CAN_INSTALL=1
     if [ -f /etc/alpine-release ]; then
-        if ! apk add --upgrade pandoc; then
-            CAN_INSTALL=0
+        if apk add --upgrade pandoc; then
+            return
         fi
     else
-        if ! apt-get install -y --no-install-recommends; then
-            CAN_INSTALL=0
+        if apt-get install -y --no-install-recommends pandoc; then
+            return
         fi
-    fi
-
-    if [ "${CAN_INSTALL}" -eq "1" ; then
-        return
     fi
 
     if [ -f /etc/alpine-release ]; then

@@ -15,7 +15,7 @@ do_alpine() {
 
 do_ubuntu() {
     RELEASE_SPECIFIC_PACKAGES="netcat"
-    if [ "${ID}" -eq "debian" ]; then
+    if [ "${ID}" = "debian" ]; then
         RELEASE_SPECIFIC_PACKAGES="netcat-openbsd"
     fi
     export DEBIAN_FRONTEND=noninteractive
