@@ -51,6 +51,7 @@ jobs:
         with:
           repository: kumina/postfix_exporter
           path: 'postfix_exporter'
+          ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
 
       # Buildkit setup
       - uses: ./.github/actions/buildx-setup

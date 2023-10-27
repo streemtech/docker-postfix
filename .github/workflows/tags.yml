@@ -75,7 +75,7 @@ jobs:
           push: true
           tags: |
             boky/postfix-exporter:${{ env.RELEASE_VERSION }}
-            boky/postfix-exporter:${{ env.RELEASE_VERSION }}
+            boky/postfix-exporter:${{ env.RELEASE_VERSION_NO_v }}
           platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
           cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
@@ -127,6 +127,8 @@ jobs:
           tags: |
             boky/postfix:${{ env.RELEASE_VERSION }}
             boky/postfix:${{ env.RELEASE_VERSION }}-alpine
+            boky/postfix:${{ env.RELEASE_VERSION_NO_v }}
+            boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all packages for 386 any more :-(
           platforms: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le"
@@ -175,7 +177,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
+          tags: |
+            boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
+            boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-ubuntu
           platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
@@ -203,12 +207,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get release version
-        id: version_number
-        shell: bash
-        run: |
-          echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_OUTPUT
+      # Release version setup
+      - uses: ./.github/actions/get-release-version
 
       - name: Checkout gh-pages
         uses: actions/checkout@v4
@@ -238,7 +238,7 @@ jobs:
       - name: Package helm chart with X.Y.Z
         uses: WyriHaximus/github-action-helm3@v3
         with:
-          exec: helm package --app-version "${RELEASE_VERSION#v}" --version "${RELEASE_VERSION#v}" --destination ./gh-pages helm/mail
+          exec: helm package --app-version "${RELEASE_VERSION_NO_v}" --version "${RELEASE_VERSION_NO_v}" --destination ./gh-pages helm/mail
 
       - name: Create helm chart index
         uses: WyriHaximus/github-action-helm3@v3
