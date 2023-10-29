@@ -143,6 +143,7 @@ postfix_upgrade_conf() {
 	local entry
 	local filename
 	local OLD_IFS
+	local daemon_directory
 
 	# Check for any references to the old "hash:" and "btree:" databases and replae them with "lmdb:"
 	if cat "$maincf" | egrep -v "^#" | egrep -q "(hash|btree):"; then
@@ -166,7 +167,40 @@ postfix_upgrade_conf() {
 		done
 		IFS="$OLD_IFS"
 	else
-		debug "No upgrade needed."
+		debug "No upgrade of hashes needed needed."
+	fi
+
+	# Some people will keep the configuration of postfix on an external drive, although this is not strictly neccessary by this
+	# image. And when they switch between different distrubtions (Alpine -> Debian and vice versa), the image will fail with the
+	# old configuration. This is a quick and dirty check to solve this issue so we don't get issues like these:
+	# https://github.com/bokysan/docker-postfix/issues/147
+	if grep -q -E "^\s*daemon_directory\s*=" "$maincf"; then
+		# Get the directory
+		daemon_directory="$(grep -q -E "^\s*daemon_directory\s*=" "$maincf")"
+		daemon_directory="${daemon_directory#*=}"
+		daemon_directory="${daemon_directory#"${daemon_directory%%[![:space:]]*}"}" # remove leading whitespace characters
+		daemon_directory="${daemon_directory%"${daemon_directory##*[![:space:]]}"}" # remove trailing whitespace characters
+
+		# Debian, Ubuntu
+		# daemon_directory = /usr/lib/postfix/sbin
+		# Alpine
+		# daemon_directory = /usr/libexec/postfix
+
+		if [[ daemon_directory == "/usr/lib/postfix/sbin" ]] && [[ ! -d "/usr/lib/postfix/sbin" ]] && [[ -d "/usr/libexec/postfix" ]]; then
+			warn "You're switching from Debian/Ubuntu distribution to Alpine. Changing ${emphasis}daemon_directory = /usr/libexec/postfix${reset}, otherwise this image will not run."
+			notice "To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume and let this image manage it itself."
+			do_postconf -e daemon_directory=/usr/libexec/postfix
+			daemon_directory=/usr/libexec/postfix
+		elif [[ daemon_directory == "/usr/libexec/postfix" ]] && [[ ! -d "/usr/libexec/postfix" ]] && [[ -d "/usr/lib/postfix/sbin" ]]; then
+			warn "You're switching from Alpine to Debian/Ubuntu distribution. Changing ${emphasis}daemon_directory = /usr/lib/postfix/sbin${reset}, otherwise this image will not run."
+			notice "To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume and let this image manage it itself."
+			do_postconf -e daemon_directory=/usr/lib/postfix/sbin
+			daemon_directory=/usr/lib/postfix/sbin
+		fi
+
+		if [[ ! -d "${daemon_directory}" ]]; then
+			error "Your ${emphasis}daemon_directory${reset} is set to ${emphasis}${daemon_directory}${reset} but it does not exist. Postfix startup will most likely fail."
+		fi
 	fi
 }
 
