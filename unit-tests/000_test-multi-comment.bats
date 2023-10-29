@@ -3,6 +3,9 @@
 load /code/scripts/common.sh
 load /code/scripts/common-run.sh
 
+# 
+postconf daemon_directory=/usr/libexec/postfix
+
 if [[ ! -f /etc/postfix/main.test-multi-comment ]]; then
 	cp /etc/postfix/main.cf /etc/postfix/main.test-multi-comment
 fi

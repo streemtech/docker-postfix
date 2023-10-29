@@ -169,7 +169,32 @@ do_postconf() {
 		shift
 		postconf -e "$@"
 	fi
+}
 
+############################
+# Read a configuration from postfix configuration
+############################
+get_postconf() {
+	local name="${1}"
+	local result
+	local error
+
+	# This will throw a warning if the config option does not exist, e.g.
+	# postconf: warning: foo_bar: unknown parameter
+
+	# This is a bash magic to capture both out and error in the same line.
+	# We're just basically calling "postconf <name>"
+	. <({ error=$({ result="$(postconf "${name}")"; } 2>&1; declare -p result >&2); declare -p error; } 2>&1)
+
+	if [[ -n "${error}" ]]; then
+		error: "Could not read variable ${emphasis}${name}${reset}: ${error}"
+		return
+	fi
+
+	result="${result#*=}"
+	result="${result#"${result%%[![:space:]]*}"}" # remove leading whitespace characters
+	result="${result%"${result##*[![:space:]]}"}" # remove trailing whitespace characters
+	printf '%s' "${result}"
 }
 
 # usage: file_env VAR [DEFAULT]

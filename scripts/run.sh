@@ -12,6 +12,7 @@ setup_conf                          # Copy over files from /etc/postfix.template
 reown_folders                       # Make and reown /var/spool/postfix/ folders
 postfix_enable_chroot               # Allow Postfix to run in chroot
 postfix_upgrade_conf                # Upgrade old coniguration, replace "hash:" and "btree:" databases to "lmdb:"
+postfix_upgrade_daemon_directory    # Change the 'daemon_directory' postfix configuration, if a change is detected from Alpine<->Debian/Ubuntu
 postfix_disable_utf8                # Disable SMTPUTF8, because libraries (ICU) are missing in alpine
 postfix_create_aliases              # Update aliases database. It's not used, but postfix complains if the .db file is missing
 postfix_disable_local_mail_delivery # Disable local mail delivery
@@ -35,7 +36,7 @@ postfix_custom_commands             # Apply custom postfix settings
 opendkim_custom_commands            # Apply custom OpenDKIM settings
 postfix_open_submission_port        # Enable the submission port
 execute_post_init_scripts           # Execute any scripts found in /docker-init.db/
-unset_sensible_variables            # Remove environment variables that contains sensible values (secrets) that are read from conf files
+unset_sensitive_variables            # Remove environment variables that contains sensitive values (secrets) that are read from conf files
 
 notice "Starting: ${emphasis}rsyslog${reset}, ${emphasis}postfix${reset}$DKIM_ENABLED"
 exec supervisord -c /etc/supervisord.conf

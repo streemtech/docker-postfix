@@ -2,15 +2,18 @@ ARG ALPINE_VERSION=latest
 FROM alpine:${ALPINE_VERSION} as build
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
-ARG SASL_XOAUTH2_GIT_REF=release-0.9
+ARG SASL_XOAUTH2_GIT_REF=release-0.24
+COPY *.patch /build-scripts/
 
 RUN        true && \
            apk add --no-cache --upgrade git && \
-           apk add --no-cache --upgrade cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev && \
-           git clone --depth 1 --branch ${SASL_XOAUTH2_GIT_REF} ${SASL_XOAUTH2_REPO_URL} /sasl-xoauth2  && \
-           cd /sasl-xoauth2 && \
-           mkdir build && \
+           apk add --no-cache --upgrade cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch
+RUN        git clone --depth 1 --branch ${SASL_XOAUTH2_GIT_REF} ${SASL_XOAUTH2_REPO_URL} /sasl-xoauth2
+WORKDIR    /sasl-xoauth2
+RUN        mkdir build && \
            cd build && \
+           patch -p1 -d .. < /build-scripts/sasl-xoauth2-01.patch && \
+           patch -p1 -d .. < /build-scripts/sasl-xoauth2-02.patch && \
            cmake -DCMAKE_INSTALL_PREFIX=/ .. && \
            make
 

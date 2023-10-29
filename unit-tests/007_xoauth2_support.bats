@@ -10,7 +10,7 @@ load /code/scripts/common-run.sh
 	local XOAUTH2_INITIAL_ACCESS_TOKEN="access_token"
 	local XOAUTH2_INITIAL_REFRESH_TOKEN="refres_token"
 
-	unset_sensible_variables
+	unset_sensitive_variables
 
 	[ -z "$RELAYHOST_PASSWORD" ]
 	[ -z "$XOAUTH2_CLIENT_ID" ]
