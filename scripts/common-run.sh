@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
-announce_startup() {
-	echo -e "${gray}${emphasis}★★★★★ ${reset}${lightblue}POSTFIX STARTING UP${reset}${gray}${emphasis} ★★★★★${reset}"
-}
+announce_startup() (
+	DISTRO="unknown"
+	[ -f /etc/lsb-release ] && . /etc/lsb-release
+	[ -f /etc/os-release ] && . /etc/os-release
+	if [ -f /etc/alpine-release ]; then
+		DISTRO="alpine"
+	else
+		DISTRO="${ID}"
+	fi
+	echo -e "${gray}${emphasis}★★★★★ ${reset}${lightblue}POSTFIX STARTING UP${reset} ${gray}(${reset}${emphasis}${DISTRO}${reset}${gray})${emphasis} ★★★★★${reset}"
+)
 
 setup_timezone() {
 	if [[ ! -z "$TZ" ]]; then
@@ -90,7 +98,7 @@ reown_folders() {
 	if ! chown -R postfix:postdrop /var/spool/postfix/private; then
 		warn "Cannot reown ${emphasis}postfix:postdrop${reset} for ${emphasis}/var/spool/postfix/private${reset}. Your installation might be broken."
 	fi
-	debug "Reowing ${emphasis}postfix:postdrop /var/spool/postfix/public/${reset}"
+	debug "Reowning ${emphasis}postfix:postdrop /var/spool/postfix/public/${reset}"
 	if ! chown -R postfix:postdrop /var/spool/postfix/public; then
 		warn "Cannot reown ${emphasis}postfix:postdrop${reset} for ${emphasis}/var/spool/postfix/public${reset}. Your installation might be broken."
 	fi
@@ -171,10 +179,8 @@ postfix_upgrade_conf() {
 }
 
 postfix_upgrade_daemon_directory() {
-	# Debian, Ubuntu
-	local dir_debian="/usr/lib/postfix/sbin"
-	# Alpine
-	local dir_alpine="/usr/libexec/postfix"
+	local dir_debian="/usr/lib/postfix/sbin" # Debian, Ubuntu
+	local dir_alpine="/usr/libexec/postfix"  # Alpine
 
 
 	# Some people will keep the configuration of postfix on an external drive, although this is not strictly neccessary by this
@@ -183,24 +189,14 @@ postfix_upgrade_daemon_directory() {
 	# https://github.com/bokysan/docker-postfix/issues/147
 	local daemon_directory="$(get_postconf "daemon_directory")"
 
-	if [[ daemon_directory == "${dir_debian}" ]] && [[ ! -d "${dir_debian}" ]]; then
-		if [[ -d "${dir_alpine}" ]]; then
-			warn "You're switching from Debian/Ubuntu distribution to Alpine. Changing ${emphasis}daemon_directory = ${dir_alpine}${reset}, otherwise this image will not run."
-			notice "To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume and let this image manage it itself."
-			do_postconf -e "daemon_directory=${dir_alpine}"
-			daemon_directory="${dir_alpine}"
-		else
-			warn "Running with default Debian/Ubuntu deamon directory ${emphasis}${dir_debian}${reset}, but I can't identify it as a dir."
-		fi
-	elif [[ daemon_directory == "${dir_alpine}" ]] && [[ ! -d "${dir_alpine}" ]]; then
-		if [[ -d "${dir_debian}" ]]; then
-			warn "You're switching from Alpine to Debian/Ubuntu distribution. Changing ${emphasis}daemon_directory = ${dir_debian}${reset}, otherwise this image will not run."
-			notice "To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume and let this image manage it itself."
-			do_postconf -e "daemon_directory=${dir_debian}"
-			daemon_directory="${dir_debian}"
-		else
-			warn "Running with default Alpine deamon directory ${emphasis}${dir_debian}${reset}, but I can't identify it as a dir."
-		fi
+	if [[ "${daemon_directory}" == "${dir_debian}" ]] && [[ ! -d "${dir_debian}" ]] && [[ -d "${dir_alpine}" ]]; then
+		warn "You're switching from Debian/Ubuntu distribution to Alpine. Changing ${emphasis}daemon_directory = ${dir_alpine}${reset}, otherwise this image will not run.\r\n        To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume, and let this image manage it itself."
+		do_postconf -e "daemon_directory=${dir_alpine}"
+		daemon_directory="${dir_alpine}"
+	elif [[ "${daemon_directory}" == "${dir_alpine}" ]] && [[ ! -d "${dir_alpine}" ]] && [[ -d "${dir_debian}" ]]; then
+		warn "You're switching from Alpine to Debian/Ubuntu distribution. Changing ${emphasis}daemon_directory = ${dir_debian}${reset}, otherwise this image will not run.\r\n        To avoid these warnings in the future, it is suggested ${emphasis}NOT${reset} to link ${emphasis}/etc/postfix${reset} to a volume, and let this image manage it itself."
+		do_postconf -e "daemon_directory=${dir_debian}"
+		daemon_directory="${dir_debian}"
 	fi
 
 	if [[ ! -d "${daemon_directory}" ]]; then
@@ -212,9 +208,13 @@ postfix_upgrade_daemon_directory() {
 }
 
 postfix_disable_utf8() {
-	if [[ -f /etc/alpine-release ]]; then
+	local smtputf8_enable="$(get_postconf "smtputf8_enable")"
+
+	if [[ -f /etc/alpine-release ]] && [[ "${smtputf8_enable}" == "yes" ]]; then
+		debug "Running on Alpine. Setting ${emphasis}smtputf8_enable${reset}=${emphasis}no${reset}, as Alpine does not have proper libraries to handle UTF-8"
 		do_postconf -e smtputf8_enable=no
-	else 
+	elif [[ "${smtputf8_enable}" == "no" ]]; then
+		debug "Running on non-Alpine system. Setting ${emphasis}smtputf8_enable${reset}=${emphasis}yes${reset}."
 		do_postconf -e smtputf8_enable=yes
 	fi
 }
@@ -317,7 +317,7 @@ postfix_setup_relayhost() {
 			echo -e " without any authentication. ${emphasis}Make sure your server is configured to accept emails coming from this IP.${reset}"
 		fi
 	else
-		notice "Will try to deliver emails directly to the final server. ${emphasis}Make sure your DNS is setup properly!${reset}"
+		notice "Postfix is configured to deliver messages directly (without relaying). ${emphasis}Make sure your DNS is setup properly!${reset} If insure, read the docs."
 		do_postconf -# relayhost
 		do_postconf -# smtp_sasl_auth_enable
 		do_postconf -# smtp_sasl_password_maps

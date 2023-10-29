@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+chmod +x /scripts/*.sh
 . /scripts/common.sh
 . /scripts/common-run.sh
 
@@ -36,7 +37,7 @@ postfix_custom_commands             # Apply custom postfix settings
 opendkim_custom_commands            # Apply custom OpenDKIM settings
 postfix_open_submission_port        # Enable the submission port
 execute_post_init_scripts           # Execute any scripts found in /docker-init.db/
-unset_sensitive_variables            # Remove environment variables that contains sensitive values (secrets) that are read from conf files
+unset_sensitive_variables           # Remove environment variables that contains sensitive values (secrets) that are read from conf files
 
 notice "Starting: ${emphasis}rsyslog${reset}, ${emphasis}postfix${reset}$DKIM_ENABLED"
 exec supervisord -c /etc/supervisord.conf
