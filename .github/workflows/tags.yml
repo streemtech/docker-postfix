@@ -275,7 +275,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
-          tag_name: gh-pages-${{ steps.version_number.outputs.RELEASE_VERSION }}
+          tag_name: gh-pages-${{ env.RELEASE_VERSION }}
 
       - name: Create Release
         id: create_release
