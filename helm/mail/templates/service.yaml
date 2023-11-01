@@ -9,6 +9,7 @@ metadata:
   labels:
     {{- $labels | nindent 4 }}
     {{- with .Values.service.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+    type: standard
   annotations:
     {{- with .Values.service.annotations }}{{ toYaml . | nindent 4 }}{{ end }}
 spec:
@@ -33,6 +34,7 @@ metadata:
   labels:
     {{- $labels | nindent 4 }}
     {{- with .Values.service.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+    type: headless
   annotations:
     {{- with .Values.service.annotations }}{{ toYaml . | nindent 4 }}{{ end }}
 spec:
