@@ -21,6 +21,13 @@ service:
   annotations: {}
   # nodePort:
 
+# StatefulSets now require a headless service
+# https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
+headlessService:
+  enabled: true
+  labels: {}
+  annotations: {}
+
 metrics:
   enabled: false
   service:

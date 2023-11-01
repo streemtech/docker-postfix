@@ -23,9 +23,10 @@ spec:
       {{ if eq .Values.service.type "NodePort" }}nodePort: {{ .Values.service.nodePort }}{{ end }}
   selector:
     {{- $selectorLabels | nindent 4 }}
+{{- if .Values.headlessService.enabled }}
 ---
 # https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
-# StefullSets now require a headless service
+# StatefulSets now require a headless service
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,10 +34,10 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- $labels | nindent 4 }}
-    {{- with .Values.service.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+    {{- with .Values.headlessService.labels }}{{ toYaml . | nindent 4 }}{{ end }}
     type: headless
   annotations:
-    {{- with .Values.service.annotations }}{{ toYaml . | nindent 4 }}{{ end }}
+    {{- with .Values.headlessService.annotations }}{{ toYaml . | nindent 4 }}{{ end }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -48,3 +49,4 @@ spec:
       {{ if eq .Values.service.type "NodePort" }}nodePort: {{ .Values.service.nodePort }}{{ end }}
   selector:
     {{- $selectorLabels | nindent 4 }} 
+{{- end -}}
