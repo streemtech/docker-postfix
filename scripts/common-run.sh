@@ -145,6 +145,18 @@ postfix_enable_chroot() {
 	) | sed 's/^/        /g'
 }
 
+postfix_upgrade_default_database_type() {
+	# Debian (and Ubuntu?) defalt to "hash:" and "btree:" database types. These have been removed from Alpine due to
+	# licence issues. To ensure compatiblity across images of this service across different distributions, we just
+	# select "lmdb:" as the default database type -- this should be supported in every distro.
+	local default_database_type="$(get_postconf "default_database_type")"	
+
+	if [[ "${default_database_type}" != "lmdb" ]]; then
+		notice "Switching ${emphasis}default_database_type${reset} to ${emphasis}lmdb${reset} to ensure cross-distro compatibility."
+		do_postconf -e "default_database_type=lmdb"
+	fi
+}
+
 postfix_upgrade_conf() {
 	local maincf=/etc/postfix/main.cf
 	local line
@@ -317,7 +329,7 @@ postfix_setup_relayhost() {
 			echo -e " without any authentication. ${emphasis}Make sure your server is configured to accept emails coming from this IP.${reset}"
 		fi
 	else
-		notice "Postfix is configured to deliver messages directly (without relaying). ${emphasis}Make sure your DNS is setup properly!${reset} If insure, read the docs."
+		notice "Postfix is configured to deliver messages directly (without relaying). ${emphasis}Make sure your DNS is setup properly!${reset} If unsure, read the docs."
 		do_postconf -# relayhost
 		do_postconf -# smtp_sasl_auth_enable
 		do_postconf -# smtp_sasl_password_maps
