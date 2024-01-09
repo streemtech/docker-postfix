@@ -61,7 +61,7 @@ VOLUME     [ "/var/spool/postfix", "/etc/postfix", "/etc/opendkim/keys" ]
 USER       root
 WORKDIR    /tmp
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --start-interval=2s --retries=3 CMD printf "EHLO healthcheck\nquit\n" | { while read l ; do sleep 1; echo $l; done } | nc -w 2 127.0.0.1 587 | grep -qE "^220.*ESMTP Postfix"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --start-interval=2s --retries=3 CMD /scripts/healthcheck.sh
 
 EXPOSE     587
 CMD        [ "/bin/sh", "-c", "/scripts/run.sh" ]
