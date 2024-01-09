@@ -18,5 +18,8 @@ check_dkim() {
     printf '\x18Clocalhost\x004\x00\x00127.0.0.1\x00' | nc -w 2 127.0.0.1 8891
 }
 
+echo "Postfix check..."
 check_postfix
+echo "DKIM check..."
 check_dkim
+echo "All OK!"

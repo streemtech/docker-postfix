@@ -205,6 +205,7 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 60
   failureThreshold: 6
+  timeoutSeconds: 8
   exec:
     command:
       - sh
