@@ -153,6 +153,9 @@ spec:
             - "--postfix.showq_path"
             - {{ print "/var/spool/postfix/public/showq" | quote }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+              name: tmp
             - name: {{ $fullName | quote }}
               mountPath: /var/spool/postfix
               subPath: spool
@@ -184,7 +187,9 @@ spec:
       dnsConfig: {{- toYaml (omit .Values.dns "policy") | nindent 8 }}
       {{- end }}
       volumes:
-            {{- if .Values.certs.create }}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.certs.create }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}

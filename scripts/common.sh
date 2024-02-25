@@ -219,4 +219,12 @@ file_env() {
 	unset "$fileVar"
 }
 
+# Return the directory where zone info is stored. Will return empy string if zoneinfo not found
+zone_info_dir() {
+	[[ -d /usr/share/zoneinfo ]] && printf "/usr/share/zoneinfo" && return
+	[[ -d /var/db/timezone/zoneinfo ]] && printf "/var/db/timezone/zoneinfo" && return
+	[[ -d /usr/lib/zoneinfo ]] && printf "/usr/lib/zoneinfo" && return
+	return
+}
+
 export reset green yellow orange orange_emphasis lightblue red gray emphasis underline

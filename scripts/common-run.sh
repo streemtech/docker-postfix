@@ -14,7 +14,7 @@ announce_startup() (
 
 setup_timezone() {
 	if [[ ! -z "$TZ" ]]; then
-		TZ_FILE="/usr/share/zoneinfo/$TZ"
+		TZ_FILE="$(zone_info_dir)/$TZ"
 		if [ -f "$TZ_FILE" ]; then
 			notice "Setting container timezone to: ${emphasis}$TZ${reset}"
 			ln -snf "$TZ_FILE" /etc/localtime
@@ -26,6 +26,17 @@ setup_timezone() {
 		info "Not setting any timezone for the container"
 	fi
 }
+
+check_environment_sane() (
+	if touch /tmp/test; then
+		debug "/tmp writable."
+		rm /tmp/test
+	else
+		error "Could not write to /tmp. Please mount it to an empty dir if the image is read-only."
+		exit
+	fi
+
+)
 
 rsyslog_log_format() {
 	local log_format="${LOG_FORMAT}"
@@ -127,15 +138,22 @@ postfix_enable_chroot() {
 	if [[ -z "${POSTFIXD_ETC}" ]]; then
 		POSTFIXD_ETC="${POSTFIXD_DIR}/etc"
 	fi
+
+	local zoneinfo="$(zone_info_dir)"
 	if [[ -z "${POSTFIX_ZIF}" ]]; then
-		POSTFIXD_ZIF="${POSTFIXD_DIR}/usr/lib/zoneinfo"
+		POSTFIXD_ZIF="${POSTFIXD_DIR}${zoneinfo}"
 	fi
 	(
 		umask 022
-		[[ -d "$POSTFIXD_DIR" ]]    && mkdir -pv                  $POSTFIXD_DIR  || true
-		[[ -d "$POSTFIXD_ETC" ]]    && mkdir -pv                  $POSTFIXD_ETC  || true
-		[[ -d "$POSTFIXD_ZIF" ]]    && mkdir -pv                  $POSTFIXD_ZIF  || true
-		[[ -e /etc/localtime ]]     && ln -fsv /etc/localtime     $POSTFIXD_ZIF/ || true
+		[[ ! -d "$POSTFIXD_ZIF" ]]  && mkdir -pv                  $POSTFIXD_ZIF  || true
+		[[ ! -d "$POSTFIXD_DIR" ]]  && mkdir -pv                  $POSTFIXD_DIR  || true
+		[[ ! -d "$POSTFIXD_ETC" ]]  && mkdir -pv                  $POSTFIXD_ETC  || true
+		if [[ -h /etc/localtime ]]; then
+			# Assume it links to ZoneInfo or something that is accessible from chroot
+			echo "Copying ${zoneinfo} -> ${POSTFIXD_ZIF}"
+			cp -fPpr ${zoneinfo}/* ${POSTFIXD_ZIF}/
+			cp -fPpv /etc/localtime "$POSTFIXD_ETC/"
+		fi
 		[[ -e /etc/localtime ]]     && cp -fpv /etc/localtime     $POSTFIXD_ETC  || true
 		[[ -e /etc/nsswitch.conf ]] && cp -fpv /etc/nsswitch.conf $POSTFIXD_ETC  || true
 		[[ -e /etc/resolv.conf ]]   && cp -fpv /etc/resolv.conf   $POSTFIXD_ETC  || true
