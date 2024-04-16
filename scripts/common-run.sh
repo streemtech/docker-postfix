@@ -424,6 +424,8 @@ postfix_setup_xoauth2_post_setup() {
 }
 
 postfix_setup_smtpd_sasl_auth() {
+	local first_bad_user bad_users mydomain message
+	local _user _pwd
 	if [ ! -z "$SMTPD_SASL_USERS" ]; then
 		info "Enable smtpd sasl auth."
 		do_postconf -e "smtpd_sasl_auth_enable=yes"
@@ -435,19 +437,41 @@ pwcheck_method: auxprop
 auxprop_plugin: sasldb
 mech_list: PLAIN LOGIN CRAM-MD5 DIGEST-MD5 NTLM
 EOF
-		[ ! -d /etc/sasl2 ] && mkdir /etc/sasl2
-		ln -s /etc/postfix/sasl/smtpd.conf /etc/sasl2/
+		[[ ! -d /etc/sasl2 ]] && mkdir /etc/sasl2
+		ln -s -f /etc/postfix/sasl/smtpd.conf /etc/sasl2/
 
+		bad_users=""
+		mydomain="$(postconf -h mydomain)"
 		# sasldb2
 		echo $SMTPD_SASL_USERS | tr , \\n > /tmp/passwd
 		while IFS=':' read -r _user _pwd; do
-			echo $_pwd | saslpasswd2 -p -c $_user
+			# Fix for issue https://github.com/bokysan/docker-postfix/issues/192
+			if [[ "$_user" = *@* ]]; then
+				echo $_pwd | saslpasswd2 -p -c $_user
+			else
+				if [[ -z "$bad_users" ]]; then
+					bad_users="${emphasis}${_user}${reset}"
+					first_bad_user="${_user}"
+				else
+					bad_users="${bad_users},${emphasis}${_user}${reset}"
+				fi
+				echo $_pwd | saslpasswd2 -p -c -u $mydomain $_user
+			fi
 		done < /tmp/passwd
 
 		rm -f /tmp/passwd
 
-		[ -f /etc/sasldb2 ] && chown postfix:postfix /etc/sasldb2
-		[ -f /etc/sasl2/sasldb2 ] && chown postfix:postfix /etc/sasl2/sasldb2
+		[[ -f /etc/sasldb2 ]] && chown postfix:postfix /etc/sasldb2
+		[[ -f /etc/sasl2/sasldb2 ]] && chown postfix:postfix /etc/sasl2/sasldb2
+
+		if [[ -n "$bad_users" ]]; then
+			notice "$(printf '%s' \
+				"Some SASL users (${bad_users}) were specified without the domain. Container domain (${emphasis}${mydomain}${reset}) was automatically applied. " \
+				"If this was an intended behavour, you can safely ignore this message. To prevent the message in the future, specify your usernames with domain " \
+				"name, e.g. ${emphasis}${first_bad_user}@${mydomain}:<pass>${reset}. For more info, see https://github.com/bokysan/docker-postfix/issues/192"			
+			)"
+		fi
+
   		debug 'Sasldb configured'
 	fi
 }

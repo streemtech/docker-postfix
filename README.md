@@ -209,12 +209,14 @@ To change the log format, set the (unsurprisingly named) variable `LOG_FORMAT=js
 - `XOAUTH2_INITIAL_ACCESS_TOKEN` = Initial OAuth2 access token.
 - `XOAUTH2_INITIAL_REFRESH_TOKEN` = Initial OAuth2 refresh token.
 - `XOAUTH2_TOKEN_ENDPOINT` = Token endpoint provided four your XOAUTH App , GMail use : https://accounts.google.com/o/oauth2/token
-- `SMTPD_SASL_USERS` = Users allow to send mail (ex: user1:pass1,user2:pass2,...)
+- `SMTPD_SASL_USERS` = Users allow to send mail (ex: user1:pass1,user2:pass2,...). *Warning:* Users need to be specified with a domain, as explained
+  on ticket [[#192](https://github.com/bokysan/docker-postfix/issues/192)]. This image will automatically add a domain if one is not provided and will
+  issue a notice when that happens.
 - `MASQUERADED_DOMAINS` = domains where you want to masquerade internal hosts
 - `SMTP_HEADER_CHECKS`= Set to `1` to enable header checks of to a location of the file for header checks
 - `POSTFIX_myhostname` = Set the name of this postfix server
 - `POSTFIX_mynetworks` = Allow sending mails only from specific networks ( default `127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` )
-- `POSTFIX_message_size_limit` = The maximum size of the messsage, in bytes, by default it's unlimited
+- `POSTFIX_message_size_limit` = The maximum size of the message, in bytes, by default it's unlimited
 - `POSTFIX_<any_postfix_setting>` = provide any additional postfix setting
 
 #### `RELAYHOST`, `RELAYHOST_USERNAME` and `RELAYHOST_PASSWORD`
