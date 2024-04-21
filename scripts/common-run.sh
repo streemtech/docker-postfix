@@ -406,7 +406,7 @@ postfix_setup_xoauth2_post_setup() {
 		do_postconf -e 'smtp_tls_session_cache_database=lmdb:${data_directory}/smtp_scache'
 	else
 		# So, this fix should solve the issue #106, when password in the 'smtp_sasl_password_maps' was
-		# read as file instead of the actual password. It turns out that  the culprit is the sasl-xoauth2
+		# read as file instead of the actual password. It turns out that the culprit is the sasl-xoauth2
 		# plugin, which expect the filename in place of the password. And as the plugin injects itself
 		# automatically in the list of SASL login mechanisms, it tries to read the password as a file and --
 		# naturally -- fails.
@@ -418,7 +418,7 @@ postfix_setup_xoauth2_post_setup() {
 			# Ubuntu/Debian have renamed pluginviewer to saslpluginviewer so this fails with those distros.
 			plugin_viewer="saslpluginviewer"
 		fi
-		other_plugins="$(${plugin_viewer} -c | grep Plugin | cut -d\  -f2 | cut -c2- | rev | cut -c2- | rev | grep -v EXTERNAL | grep -v sasl-xoauth2 | tr '\n' ',' | rev | cut -c2- | rev)"
+		other_plugins="$(${plugin_viewer} -c | grep Plugin | cut -d\  -f2 | cut -c2- | rev | cut -c2- | rev | grep -v EXTERNAL | grep -v sasl-xoauth2 | tr '\n' ',' | rev | cut -c2- | rev | convert_plugin_names_to_filter_names)"
 		do_postconf -e "smtp_sasl_mechanism_filter=${other_plugins}"
 	fi
 }
@@ -472,7 +472,7 @@ EOF
 			)"
 		fi
 
-  		debug 'Sasldb configured'
+		debug 'Sasldb configured'
 	fi
 }
 
