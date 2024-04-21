@@ -34,7 +34,7 @@ runs:
         DOCKER_ACCESS_TOKEN: '${{ inputs.DOCKER_ACCESS_TOKEN }}'
 
     - name: Cache Docker layers
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-postfix-exporter-${{ github.sha }}
