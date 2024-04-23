@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 announce_startup() (
+	local postfix_account opendkim_account
+
 	DISTRO="unknown"
 	[ -f /etc/lsb-release ] && . /etc/lsb-release
 	[ -f /etc/os-release ] && . /etc/os-release
@@ -10,6 +12,11 @@ announce_startup() (
 		DISTRO="${ID}"
 	fi
 	echo -e "${gray}${emphasis}★★★★★ ${reset}${lightblue}POSTFIX STARTING UP${reset} ${gray}(${reset}${emphasis}${DISTRO}${reset}${gray})${emphasis} ★★★★★${reset}"
+
+	postfix_account="$(cat /etc/passwd | grep -E "^postfix" | cut -f3-4 -d:)"
+	opendkim_account="$(cat /etc/passwd | grep -E "^opendkim" | cut -f3-4 -d:)"
+
+	notice "System accounts: ${emphasis}postfix${reset}=${orange_emphasis}${postfix_account}${reset}, ${emphasis}opendkim${reset}=${orange_emphasis}${opendkim_account}${reset}. Careful when switching distros."
 )
 
 setup_timezone() {
