@@ -155,7 +155,6 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-              name: tmp
             - name: {{ $fullName | quote }}
               mountPath: /var/spool/postfix
               subPath: spool
