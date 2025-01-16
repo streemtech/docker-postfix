@@ -23,7 +23,7 @@ do_ubuntu() {
     apt-get install -y libsasl2-modules sasl2-bin
     apt-get install -y postfix postfix-pcre postfix-ldap
     apt-get install -y opendkim
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools colorized-logs netcat-openbsd ${RELEASE_SPECIFIC_PACKAGES}
+    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4t64 libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools colorized-logs netcat-openbsd ${RELEASE_SPECIFIC_PACKAGES}
     apt-get clean
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*    
 }
