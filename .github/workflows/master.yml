@@ -141,7 +141,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
           build-args: |
-            BASE_IMAGE=ubuntu:jammy
+            BASE_IMAGE=ubuntu:noble
 
       - name: Move cache
         run: |
