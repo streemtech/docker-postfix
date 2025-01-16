@@ -10,14 +10,12 @@ do_alpine() {
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
     apk add postfix postfix-pcre postfix-ldap
     apk add opendkim
-    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd
+    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd colorized-logs
 }
 
+
 do_ubuntu() {
-    RELEASE_SPECIFIC_PACKAGES="netcat"
-    if [ "${ID}" = "debian" ]; then
-        RELEASE_SPECIFIC_PACKAGES="netcat-openbsd"
-    fi
+    RELEASE_SPECIFIC_PACKAGES=""
     export DEBCONF_NOWARNINGS=yes
     export DEBIAN_FRONTEND=noninteractive
     echo "Europe/Berlin" > /etc/timezone
@@ -25,7 +23,7 @@ do_ubuntu() {
     apt-get install -y libsasl2-modules sasl2-bin
     apt-get install -y postfix postfix-pcre postfix-ldap
     apt-get install -y opendkim
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools ${RELEASE_SPECIFIC_PACKAGES}
+    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl libcurl4 libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools colorized-logs netcat-openbsd ${RELEASE_SPECIFIC_PACKAGES}
     apt-get clean
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*    
 }
