@@ -15,9 +15,9 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        repository: kumina/postfix_exporter
+        repository: Hsn723/postfix_exporter # Hsn723 repo is actually being updated
         path: 'postfix_exporter'
-        ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
+        ref: 'v0.7.0' # Latest commit we know that works
 
     - name: Apply patches
       shell: bash
