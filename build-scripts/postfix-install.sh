@@ -9,9 +9,18 @@ fi
 # Alpine package manager. This function is called when the image is
 # built on an Alpine base image.
 do_alpine() {
+    architecture_specific_packages=""
     apk update
+
+    if [ "$(apk info postfix-pgsql | grep -R '^postfix-pgsql')" != "" ]; then
+        architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
+    fi
+    if [ "$(apk info postfix-mysql | grep -R '^postfix-mysql')" != "" ]; then
+        architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
+    fi
+
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
-    apk add postfix postfix-pcre postfix-ldap postfix-pgsql postfix-mysql
+    apk add postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
     apk add opendkim
     apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd
 }
@@ -21,13 +30,22 @@ do_alpine() {
 # ubuntu/debian package manager. This function is called when the
 # image is built on a ubuntu/debian base image.
 do_ubuntu() {
+    architecture_specific_packages=""
     RELEASE_SPECIFIC_PACKAGES=""
     export DEBCONF_NOWARNINGS=yes
     export DEBIAN_FRONTEND=noninteractive
     echo "Europe/Berlin" > /etc/timezone
     apt-get update -y -q
+    
+    if [ "$(apt-cache search --names-only '^postfix-pgsql$')" != "" ]; then
+        architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
+    fi
+    if [ "$(apt-cache search --names-only '^postfix-mysql$')" != "" ]; then
+        architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
+    fi
+
     apt-get install -y libsasl2-modules sasl2-bin
-    apt-get install -y postfix postfix-pcre postfix-ldap postfix-pgsql postfix-mysql
+    apt-get install -y postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
     apt-get install -y opendkim
     local libcurl="libcurl4"
     if [ "$(apt-cache search --names-only '^libcurl4t64$')" != "" ]; then
