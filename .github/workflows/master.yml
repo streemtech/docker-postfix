@@ -81,7 +81,7 @@ jobs:
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
-          update-binfmts --enable
+          if command -v update-binfmts; then update-binfmts --enable; fi
 
       - name: Build and push Alpine
         uses: docker/build-push-action@v6
