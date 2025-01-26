@@ -8,7 +8,7 @@ fi
 do_alpine() {
     apk update
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
-    apk add postfix postfix-pcre postfix-ldap
+    apk add postfix postfix-pcre postfix-ldap postfix-pgsql postfix-mysql
     apk add opendkim
     apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd
 }
@@ -21,7 +21,7 @@ do_ubuntu() {
     echo "Europe/Berlin" > /etc/timezone
     apt-get update -y -q
     apt-get install -y libsasl2-modules sasl2-bin
-    apt-get install -y postfix postfix-pcre postfix-ldap
+    apt-get install -y postfix postfix-pcre postfix-ldap postfix-pgsql postfix-mysql
     apt-get install -y opendkim
     local libcurl="libcurl4"
     if [ "$(apt-cache search --names-only '^libcurl4t64$')" != "" ]; then
