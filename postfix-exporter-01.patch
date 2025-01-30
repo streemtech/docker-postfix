@@ -5,7 +5,7 @@ index 75a22d8..81145c9 100644
 @@ -1,8 +1,41 @@
 -FROM scratch
 +# syntax=docker/dockerfile:1.2
-+FROM --platform=$BUILDPLATFORM golang:1.23 AS builder
++FROM golang:1.23 AS builder
  LABEL org.opencontainers.image.source="https://github.com/hsn723/postfix_exporter" \
          org.opencontainers.image.authors="Hsn723" \
          org.opencontainers.image.title="postfix_exporter"
@@ -38,7 +38,6 @@ index 75a22d8..81145c9 100644
 +# Since we are checking out a specific SHA hash and we know this tests have worked previously, we are quite certain that the code will work.
 +# Hence disabling the test here.
 +# RUN go test
-+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM $TARGETOS/$TARGETARCH/$TARGETVARIANT"
 +RUN env GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" GOARM="$( echo "$TARGETVARIANT" | grep -E -o "\\d+$")" go build -ldflags '-extldflags "-static"'  -o /bin/postfix_exporter
 +
 +FROM scratch
