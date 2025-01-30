@@ -1,25 +1,34 @@
 diff --git a/Dockerfile b/Dockerfile
-index a3327d8..1cdfa84 100644
+index 75a22d8..81145c9 100644
 --- a/Dockerfile
 +++ b/Dockerfile
-@@ -1,4 +1,10 @@
--FROM golang:1.16 AS builder
+@@ -1,8 +1,41 @@
+-FROM scratch
 +# syntax=docker/dockerfile:1.2
-+FROM golang:1.21.3-bookworm AS builder
++FROM golang:1.23 AS builder
+ LABEL org.opencontainers.image.source="https://github.com/hsn723/postfix_exporter" \
+         org.opencontainers.image.authors="Hsn723" \
+         org.opencontainers.image.title="postfix_exporter"
 +ARG TARGETPLATFORM
 +ARG TARGETOS
 +ARG TARGETARCH
 +ARG TARGETVARIANT
 +
- WORKDIR /src
- 
- # avoid downloading the dependencies on succesive builds
-@@ -14,10 +20,18 @@ COPY . .
- 
- # Force the go compiler to use modules
- ENV GO111MODULE=on
--RUN go test
--RUN go build -o /bin/postfix_exporter
++WORKDIR /src
++
++# avoid downloading the dependencies on successive builds
++RUN apt-get update -qq && apt-get install -qqy \
++  build-essential \
++  libsystemd-dev
++
++COPY go.mod go.sum ./
++RUN go mod download
++RUN go mod verify
++
++COPY . .
++
++# Force the go compiler to use modules
++ENV GO111MODULE=on
 +# go test fails (sometimes) because it relies on an external dependency:
 +#
 +# warning: SASL authentication failure: cannot connect to saslauthd server: Permission denied
@@ -30,9 +39,12 @@ index a3327d8..1cdfa84 100644
 +# Hence disabling the test here.
 +# RUN go test
 +RUN env GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" GOARM="$( echo "$TARGETVARIANT" | grep -E -o "\\d+$")" go build -ldflags '-extldflags "-static"'  -o /bin/postfix_exporter
- 
--FROM debian:latest
++
 +FROM scratch
  EXPOSE 9154
- WORKDIR /
- COPY --from=builder /bin/postfix_exporter /bin/
+-COPY postfix_exporter /
+-COPY LICENSE /
+-ENTRYPOINT ["/postfix_exporter"]
++WORKDIR /
++COPY --from=builder /bin/postfix_exporter /bin/
++ENTRYPOINT ["/bin/postfix_exporter"]
