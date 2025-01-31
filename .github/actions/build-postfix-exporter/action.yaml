@@ -19,9 +19,9 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        repository: Hsn723/postfix_exporter # Hsn723 repo is actually being updated
+        repository: kumina/postfix_exporter
         path: 'postfix_exporter'
-        ref: 'v0.7.0' # Latest commit we know that works
+        ref: 'a6f58e9b2b2b4decc7e65c5a34b4fd53cd6665f1' # Latest commit we know that works
 
     - name: Apply patches
       shell: bash
@@ -68,11 +68,7 @@ runs:
         push: true
         tags: '${{ inputs.tags }}'
         labels: ${{ steps.meta.outputs.labels }}
-        # linux/arm/v5 and linux/arm/v6 are not supported anymore by upstream Go docker images.
-        # Technically, we could build them but we would need to bootstrap the whole Go compiler.
-        # However, I'm not sure if it's worth it.
-        platforms: "linux/amd64,linux/arm/v7,linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x"
-        # linux/386,linux/arm/v6,linux/arm64,linux/riscv64"
+        platforms: "linux/amd64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x"
         cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
         cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
 
