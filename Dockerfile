@@ -26,6 +26,12 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-
            --mount=type=tmpfs,target=/tmp \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
            sh /build-scripts/postfix-install.sh
+RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
+           --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
+           --mount=type=tmpfs,target=/var/cache/apk \
+           --mount=type=tmpfs,target=/tmp \
+           --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
+           python3 -m pip3 install msal
 
 # ============================ BUILD SASL XOAUTH2 ============================
 FROM base AS sasl
