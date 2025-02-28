@@ -22,7 +22,21 @@ do_alpine() {
     apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
     apk add postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
     apk add opendkim
-    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd
+    apk add --upgrade \
+        bash \
+        bind-tools \
+        ca-certificates \
+        jsoncpp \
+        libcurl \
+        lmdb \
+        logrotate \
+        musl \
+        musl-utils \
+        netcat-openbsd \
+        opendkim-utils \
+        rsyslog \
+        supervisor \
+        tzdata
 }
 
 
@@ -51,7 +65,25 @@ do_ubuntu() {
     if [ "$(apt-cache search --names-only '^libcurl4t64$')" != "" ]; then
         libcurl="libcurl4t64"
     fi
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl ${libcurl} libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools colorized-logs netcat-openbsd ${RELEASE_SPECIFIC_PACKAGES}
+    apt-get install -y \
+        ${libcurl} ${RELEASE_SPECIFIC_PACKAGES} \
+        bash \
+        ca-certificates \
+        colorized-logs \
+        cron \
+        curl \
+        dnsutils \
+        libjsoncpp25 \
+        logrotate \
+        net-tools \
+        netcat-openbsd \
+        opendkim-tools \
+        postfix-lmdb \
+        procps \
+        rsyslog \
+        sasl2-bin \
+        supervisor \
+        tzdata \
     apt-get clean
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*    
 }
