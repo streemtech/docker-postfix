@@ -35,7 +35,7 @@ do_alpine() {
 		netcat-openbsd \
 		opendkim-utils \
 		python3 \
-		py3-pip
+		py3-pip \
 		rsyslog \
 		supervisor \
 		tzdata
