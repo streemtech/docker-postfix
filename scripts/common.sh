@@ -289,28 +289,28 @@ convert_plugin_names_to_filter_names() {
 # that at least one works
 ###################################################################
 get_public_ip() {
-    local services=(https://ipinfo.io/ip https://ifconfig.me/ip https://icanhazip.com https://ipecho.net/ip https://ifconfig.co https://myexternalip.com/raw)
+	local services=(https://ipinfo.io/ip https://ifconfig.me/ip https://icanhazip.com https://ipecho.net/ip https://ifconfig.co https://myexternalip.com/raw)
 	local ip
-    if [[ -n "${AUTOSET_HOSTNAME_SERVICES}" ]]; then
-        services=("${AUTOSET_HOSTNAME_SERVICES}")
-        notice "Using user defined ${emphasis}AUTOSET_HOSTNAME_SERVICES${reset}=${emphasis}${AUTOSET_HOSTNAME_SERVICES}${reset} for IP detection"
-    else
-        debug "Public IP detection will use ${emphasis}${services}${reset} to detect the IP."
-    fi
+	if [[ -n "${AUTOSET_HOSTNAME_SERVICES}" ]]; then
+		services=("${AUTOSET_HOSTNAME_SERVICES}")
+		notice "Using user defined ${emphasis}AUTOSET_HOSTNAME_SERVICES${reset}=${emphasis}${AUTOSET_HOSTNAME_SERVICES}${reset} for IP detection"
+	else
+		debug "Public IP detection will use ${emphasis}${services}${reset} to detect the IP."
+	fi
 
-    for service in "${services[@]}"; do
-        if ip="$(curl --fail-early --retry-max-time 30 --retry 10 --connect-timeout 5 --max-time 10 -s)"; then
-            # Some services, such as ifconfig.co will return a line feed at the end of the response.
-            ip="$(printf "%s" "${ip}" | trim)"
-            if [[ -n "${ip}" ]]; then
-                info "Detected public IP address as ${emphasis}${services}${ip}${reset}."
-                break
-            fi
-        fi
-    done
+	for service in "${services[@]}"; do
+		if ip="$(curl --fail-early --retry-max-time 30 --retry 10 --connect-timeout 5 --max-time 10 -s)"; then
+			# Some services, such as ifconfig.co will return a line feed at the end of the response.
+			ip="$(printf "%s" "${ip}" | trim)"
+			if [[ -n "${ip}" ]]; then
+				info "Detected public IP address as ${emphasis}${services}${ip}${reset}."
+				break
+			fi
+		fi
+	done
 
-    error "Unable to detect public IP. Please check your internet connection and firewall settings."
-    return 1
+	error "Unable to detect public IP. Please check your internet connection and firewall settings."
+	return 1
 }
 
 export reset green yellow orange orange_emphasis lightblue red gray emphasis underline
