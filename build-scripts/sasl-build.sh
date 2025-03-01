@@ -37,15 +37,15 @@ setup_python_venv() {
 [ -f /etc/os-release ] && . /etc/os-release
 if [ -f /etc/alpine-release ]; then
 	apk add --upgrade --virtual .build-deps git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch
-	setup_python_venv
 	build_sasl2
+	setup_python_venv
 	apk del .build-deps;
 else
 	apt-get update -y -qq
 	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-venv"
 	apt-get install -y --no-install-recommends ${LIBS}
-	setup_python_venv
 	build_sasl2
+	setup_python_venv
 	apt-get remove --purge -y ${LIBS}
 	apt-get autoremove --yes
 	apt-get clean autoclean
