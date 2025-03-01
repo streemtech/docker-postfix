@@ -42,11 +42,12 @@ if [ -f /etc/alpine-release ]; then
 	apk del .build-deps;
 else
 	apt-get update -y -qq
-	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-venv"
+	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev"
 	apt-get install -y --no-install-recommends ${LIBS}
 	build_sasl2
+	apt-get install -y --no-install-recommends python3-venv
 	setup_python_venv
-	apt-get remove --purge -y ${LIBS}
+	apt-get remove --purge -y ${LIBS} python3-venv
 	apt-get autoremove --yes
 	apt-get clean autoclean
 fi
