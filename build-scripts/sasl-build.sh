@@ -64,12 +64,8 @@ setup_python_venv() {
 # 1. sasl2 using the sasl-xoauth2 plugin
 # 2. a python virtual environment with the msal library
 base_install() {
-	setup_rust
-	command -v rustc
-	command -v cargo
 	build_sasl2
 	setup_python_venv
-	rustup self uninstall -y
 }
 
 
@@ -80,7 +76,7 @@ base_install() {
 # Alpine Linux has a different package management system than Debian-based systems.
 if [ -f /etc/alpine-release ]; then
 	# Install necessary libraries
-	LIBS="git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch libffi-dev python3-dev"
+	LIBS="git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch libffi-dev python3-dev rust cargo"
 	apk add --upgrade curl
 	apk add --upgrade --virtual .build-deps ${LIBS}
 
@@ -96,7 +92,9 @@ else
 	apt-get install -y --no-install-recommends ${LIBS}
 
 	# Run compilation and installation
+	setup_rust
 	base_install
+	rustup self uninstall -y
 
 	# Cleanup. This is important to ensure that we don't keep unnecessary files laying around and thus increasing the size of the image.
 	apt-get remove --purge -y ${LIBS} python3-venv
