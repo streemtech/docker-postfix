@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-local arch="$(uname -m)"
+export arch="$(uname -m)"
 
 # Build the sasl2 library with the sasl-xoauth2 plugin.
 #
