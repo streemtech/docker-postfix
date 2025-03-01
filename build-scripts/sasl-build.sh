@@ -1,7 +1,62 @@
 #!/usr/bin/env bash
 set -e
 
+[ -f /etc/lsb-release ] && . /etc/lsb-release
+[ -f /etc/os-release ] && . /etc/os-release
+
+# Alpine os-release
+# PRETTY_NAME="Alpine Linux v3.21"
+# NAME="Alpine Linux"
+# ID=alpine
+# VERSION_ID=3.21.2
+# HOME_URL="https://alpinelinux.org/"
+# BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+# 
+# Debian os-release
+# PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+# NAME="Debian GNU/Linux"
+# ID=debian
+# VERSION_ID="12"
+# VERSION="12 (bookworm)"
+# VERSION_CODENAME=bookworm
+# HOME_URL="https://www.debian.org/"
+# SUPPORT_URL="https://www.debian.org/support"
+# BUG_REPORT_URL="https://bugs.debian.org/"
+#
+# Ubuntu os-release
+# PRETTY_NAME="Ubuntu 24.04.1 LTS"
+# NAME="Ubuntu"
+# ID=ubuntu
+# ID_LIKE=debian
+# VERSION_ID="24.04"
+# VERSION="24.04.1 LTS (Noble Numbat)"
+# VERSION_CODENAME=noble
+# HOME_URL="https://www.ubuntu.com/"
+# SUPPORT_URL="https://help.ubuntu.com/"
+# BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+# PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+# UBUNTU_CODENAME=noble
+# LOGO=ubuntu-logo
+
+export DEBIAN_FRONTEND=noninteractive
 export arch="$(uname -m)"
+export skip_msal=""
+
+if [[ "${ID:-}" != "alpine" ]]; then
+	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
+		skip_msal="1"
+		echo "Running on ${ID}/${arch}: ${skip_msal}"
+	else
+		echo "Running on ${ID}/${arch}: Installing msal"
+	fi
+else
+	if [[ "${arch}" != "mips64el" ]]; then
+		skip_msal="1"
+		echo "Running on ${ID}/${arch}: ${skip_msal}"
+	else
+		echo "Running on ${ID}/${arch}: ${skip_msal}"
+	fi
+fi
 
 # Build the sasl2 library with the sasl-xoauth2 plugin.
 #
@@ -48,10 +103,16 @@ build_sasl2() {
 # (because they don't exist in the PIP repositories) and "pip install" will fail without rust. Specifically, when
 # compiling cryptographic libraries.
 setup_rust() {
-	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
+	if [[ -z "${skip_msal}" ]]; then
 		curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
 		export PATH="$HOME/.cargo/bin:$PATH"
 		. "$HOME/.cargo/env"
+	fi
+}
+
+teardown_rust() {
+	if command -v rustup 2>&1 > /dev/null; then
+		rustup self uninstall -y
 	fi
 }
 
@@ -60,7 +121,7 @@ setup_rust() {
 setup_python_venv() {
 	python3 -m venv /sasl
 	. /sasl/bin/activate
-	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
+	if [[ -z "${skip_msal}" ]]; then
 		pip3 install msal
 	fi
 }
@@ -73,10 +134,6 @@ base_install() {
 	build_sasl2
 	setup_python_venv
 }
-
-
-[ -f /etc/lsb-release ] && . /etc/lsb-release
-[ -f /etc/os-release ] && . /etc/os-release
 
 # Determine the base installation method based on the OS.
 # Alpine Linux has a different package management system than Debian-based systems.
@@ -100,9 +157,7 @@ else
 	# Run compilation and installation
 	setup_rust
 	base_install
-	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
-		rustup self uninstall -y
-	fi
+	teardown_rust
 
 	# Cleanup. This is important to ensure that we don't keep unnecessary files laying around and thus increasing the size of the image.
 	apt-get remove --purge -y ${LIBS} python3-venv
