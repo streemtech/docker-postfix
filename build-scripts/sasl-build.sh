@@ -48,6 +48,7 @@ build_sasl2() {
 setup_rust() {
 	curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
 	export PATH="$HOME/.cargo/bin:$PATH"
+	. "$HOME/.cargo/env"
 }
 
 # Create a virtual environment and install the msal library for the
@@ -66,7 +67,7 @@ base_install() {
 	setup_rust
 	build_sasl2
 	setup_python_venv
-	rustup self uninstall
+	rustup self uninstall -y
 }
 
 
