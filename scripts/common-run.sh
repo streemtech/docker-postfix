@@ -299,7 +299,7 @@ postfix_reject_invalid_helos() {
 	do_postconf -e smtpd_delay_reject=yes
 	do_postconf -e smtpd_helo_required=yes
 	# Fast reject -- reject straight away when the client is connecting
-	do_postconf -e "smtpd_client_restrictions=permit_mynetworks,reject"
+	do_postconf -e "smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject"
 	# Reject / accept on EHLO / HELO command
 	do_postconf -e "smtpd_helo_restrictions=permit_mynetworks,reject_invalid_helo_hostname,permit"
 	# Delayed reject -- reject on MAIL FROM command. Not strictly neccessary to have both, but doesn't hurt
