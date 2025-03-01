@@ -65,6 +65,8 @@ setup_python_venv() {
 # 2. a python virtual environment with the msal library
 base_install() {
 	setup_rust
+	command -v rustc
+	command -v cargo
 	build_sasl2
 	setup_python_venv
 	rustup self uninstall -y
@@ -79,6 +81,7 @@ base_install() {
 if [ -f /etc/alpine-release ]; then
 	# Install necessary libraries
 	LIBS="git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch libffi-dev python3-dev"
+	apk add --upgrade curl
 	apk add --upgrade --virtual .build-deps ${LIBS}
 
 	# Run compilation and installation
