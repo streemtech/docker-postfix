@@ -56,7 +56,9 @@ setup_rust() {
 setup_python_venv() {
 	python3 -m venv /sasl
 	. /sasl/bin/activate
-	pip3 install msal
+	if [[ "$(uname -m)"!= "386" ]] && [[ "$(uname -m)"!= "i386" ]]; then
+		pip3 install msal
+	fi
 }
 
 # Installs the base components into the docker image:
