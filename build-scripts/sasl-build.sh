@@ -88,7 +88,7 @@ if [ -f /etc/alpine-release ]; then
 else
 	# Install necessary libraries
 	apt-get update -y -qq
-	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-dev"
+	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-dev python3-venv"
 	apt-get install -y --no-install-recommends ${LIBS}
 
 	# Run compilation and installation
