@@ -48,7 +48,7 @@ build_sasl2() {
 # (because they don't exist in the PIP repositories) and "pip install" will fail without rust. Specifically, when
 # compiling cryptographic libraries.
 setup_rust() {
-	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
+	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
 		curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
 		export PATH="$HOME/.cargo/bin:$PATH"
 		. "$HOME/.cargo/env"
@@ -60,7 +60,7 @@ setup_rust() {
 setup_python_venv() {
 	python3 -m venv /sasl
 	. /sasl/bin/activate
-	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
+	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
 		pip3 install msal
 	fi
 }
@@ -100,7 +100,7 @@ else
 	# Run compilation and installation
 	setup_rust
 	base_install
-	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
+	if [[ "${arch}" != "386" ]] && [[ "${arch}" != "i386" ]] && [[ "${arch}" != "mips64el" ]]; then
 		rustup self uninstall -y
 	fi
 
