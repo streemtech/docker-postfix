@@ -41,7 +41,7 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-
            --mount=type=tmpfs,target=/tmp \
            --mount=type=tmpfs,target=/sasl-xoauth2 \
            --mount=type=bind,from=build-scripts,source=/build-scripts,target=/build-scripts \
-           sh /build-scripts/sasl-build.sh
+           bash /build-scripts/sasl-build.sh
 
 # ============================ Prepare main image ============================
 FROM sasl

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+local arch="$(uname -m)"
+
 # Build the sasl2 library with the sasl-xoauth2 plugin.
 #
 # The sasl-xoauth2 plugin is a SASL plugin that provides support for XOAUTH2 (OAuth 2.0) authentication.
@@ -46,9 +48,11 @@ build_sasl2() {
 # (because they don't exist in the PIP repositories) and "pip install" will fail without rust. Specifically, when
 # compiling cryptographic libraries.
 setup_rust() {
-	curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
-	export PATH="$HOME/.cargo/bin:$PATH"
-	. "$HOME/.cargo/env"
+	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
+		curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
+		export PATH="$HOME/.cargo/bin:$PATH"
+		. "$HOME/.cargo/env"
+	fi
 }
 
 # Create a virtual environment and install the msal library for the
@@ -56,7 +60,7 @@ setup_rust() {
 setup_python_venv() {
 	python3 -m venv /sasl
 	. /sasl/bin/activate
-	if [[ "$(uname -m)"!= "386" ]] && [[ "$(uname -m)"!= "i386" ]]; then
+	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
 		pip3 install msal
 	fi
 }
@@ -96,7 +100,9 @@ else
 	# Run compilation and installation
 	setup_rust
 	base_install
-	rustup self uninstall -y
+	if [[ "${arch}"!= "386" ]] && [[ "${arch}"!= "i386" ]] && [[ "${arch}"!= "mips64el" ]]; then
+		rustup self uninstall -y
+	fi
 
 	# Cleanup. This is important to ensure that we don't keep unnecessary files laying around and thus increasing the size of the image.
 	apt-get remove --purge -y ${LIBS} python3-venv
